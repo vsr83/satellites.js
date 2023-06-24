@@ -1,4 +1,4 @@
-import {JulianTime} from "./JulianTime";
+import {GregorianTime, JulianTime} from "./JulianTime";
 
 enum TleFieldType {
     FIELD_NUMBER,
@@ -141,8 +141,10 @@ export class Tle
      * @param {ITle} json 
      *      The JSON.
      */
-    fillFromJson(json : ITle)
+    static fromJson(json : ITle) : Tle
     {
+        const tle : Tle = new Tle();
+
         function parseEpoch(str : string) : number
         {
             const year       = parseInt(str.substring(0, 4));
@@ -175,35 +177,37 @@ export class Tle
             "MEAN_MOTION_DDOT":0}
         */
 
-        this.epochYear = parseInt(json["EPOCH"].substring(0, 4));
-        const jtEpochYear = JulianTime.timeJulianYmdhms(this.epochYear, 1, 1, 0, 0, 0);
-        this.jtUt1Epoch = parseEpoch(json["EPOCH"]);
-        this.epochFracDay = this.jtUt1Epoch - jtEpochYear;
+        tle.epochYear = parseInt(json["EPOCH"].substring(0, 4));
+        const jtEpochYear = JulianTime.timeJulianYmdhms(tle.epochYear, 1, 1, 0, 0, 0);
+        tle.jtUt1Epoch = parseEpoch(json["EPOCH"]);
+        tle.epochFracDay = tle.jtUt1Epoch - jtEpochYear;
     
-        this.title          = json["OBJECT_NAME"];
-        this.catalogNumber  = json["NORAD_CAT_ID"];
-        this.classification = json["CLASSIFICATION_TYPE"];
-        this.intLaunchYear  = json["OBJECT_ID"].substring(2, 4);
-        this.intLaunchNum   = json["OBJECT_ID"].substring(6, 8);
-        this.intLaunchPiece = json["OBJECT_ID"].substring(8, 9);
-        this.meanMotionDer  = json["MEAN_MOTION_DOT"];
-        this.meanMotionDer2 = json["MEAN_MOTION_DDOT"];
-        this.dragTerm       = json["BSTAR"];
-        this.ephemerisType  = json["EPHEMERIS_TYPE"];
-        this.elementSetNo   = json["ELEMENT_SET_NO"];
-        this.catalogNumber2 = json["NORAD_CAT_ID"];
-        this.inclination    = json["INCLINATION"];
-        this.raAscNode      = json["RA_OF_ASC_NODE"];
-        this.eccentricity   = json["ECCENTRICITY"];
-        this.argPerigee     = json["ARG_OF_PERICENTER"];
-        this.meanAnomaly    = json["MEAN_ANOMALY"];
-        this.meanMotion     = json["MEAN_MOTION"];
-        this.revNoAtEpoch   = json["REV_AT_EPOCH"];
+        tle.title          = json["OBJECT_NAME"];
+        tle.catalogNumber  = json["NORAD_CAT_ID"];
+        tle.classification = json["CLASSIFICATION_TYPE"];
+        tle.intLaunchYear  = json["OBJECT_ID"].substring(2, 4);
+        tle.intLaunchNum   = json["OBJECT_ID"].substring(6, 8);
+        tle.intLaunchPiece = json["OBJECT_ID"].substring(8, 9);
+        tle.meanMotionDer  = json["MEAN_MOTION_DOT"];
+        tle.meanMotionDer2 = json["MEAN_MOTION_DDOT"];
+        tle.dragTerm       = json["BSTAR"];
+        tle.ephemerisType  = json["EPHEMERIS_TYPE"];
+        tle.elementSetNo   = json["ELEMENT_SET_NO"];
+        tle.catalogNumber2 = json["NORAD_CAT_ID"];
+        tle.inclination    = json["INCLINATION"];
+        tle.raAscNode      = json["RA_OF_ASC_NODE"];
+        tle.eccentricity   = json["ECCENTRICITY"];
+        tle.argPerigee     = json["ARG_OF_PERICENTER"];
+        tle.meanAnomaly    = json["MEAN_ANOMALY"];
+        tle.meanMotion     = json["MEAN_MOTION"];
+        tle.revNoAtEpoch   = json["REV_AT_EPOCH"];
 
-        const lines = this.toLines();
-        this.checkSum1 = parseInt(lines[1].substring(68, 69));
-        this.checkSum2 = parseInt(lines[2].substring(68, 69));
-        this.checkSumValid = true;
+        const lines = tle.toLines();
+        tle.checkSum1 = parseInt(lines[1].substring(68, 69));
+        tle.checkSum2 = parseInt(lines[2].substring(68, 69));
+        tle.checkSumValid = true;
+
+        return tle;
     }
 
     /**
@@ -215,7 +219,6 @@ export class Tle
      */
     static fromLines(lines : string[]) : Tle
     {
-        const tle : Tle = new Tle();
         const json : any = {};
 
         for (let indField = 0; indField < tleFormat.length; indField++)
@@ -249,7 +252,7 @@ export class Tle
                 break;
             }
         }
-        tle.fillFromJson(json);
+        const tle : Tle = Tle.fromJson(json);
 
         tle.checkSumValid = (Tle.lineChecksum(lines[1]) == tle.checkSum1) &&
                             (Tle.lineChecksum(lines[2]) == tle.checkSum2);
@@ -257,6 +260,82 @@ export class Tle
         tle.jtUt1Epoch = this.parseEpoch(tle.epochYear, tle.epochFracDay);
 
         return tle;
+    }
+
+    toJson() : ITle
+    {
+        /*{
+        "OBJECT_NAME":"IRNSS-1J",
+        "OBJECT_ID":"2023-076A",
+        "EPOCH":"2023-05-30T14:16:31.144224",
+        "MEAN_MOTION":1.62870852,
+        "ECCENTRICITY":0.5200823,
+        "INCLINATION":10.1782,
+        "RA_OF_ASC_NODE":270.0597,
+        "ARG_OF_PERICENTER":178.1733,
+        "MEAN_ANOMALY":185.3385,
+        "EPHEMERIS_TYPE":0,
+        "CLASSIFICATION_TYPE":"U",
+        "NORAD_CAT_ID":56759,
+        "ELEMENT_SET_NO":999,
+        "REV_AT_EPOCH":2,
+        "BSTAR":0,
+        "MEAN_MOTION_DOT":-1.04e-6,
+        "MEAN_MOTION_DDOT":0}
+        */
+
+        let launchYear : string;
+        if (parseInt(this.intLaunchYear) > 56)
+        {
+            launchYear = "19" + this.intLaunchYear;
+        }
+        else
+        {
+            launchYear = "20" + this.intLaunchYear;
+        }
+
+        function toFixed(num : number)
+        {
+            if (num < 10)
+            {
+                return "0" + num.toString();
+            }
+            else 
+            {
+                return num.toString();
+            }
+        }
+        //"EPOCH":"2023-05-30T14:16:31.144224",
+        const epochGregorian : GregorianTime = JulianTime.timeGregorian(this.jtUt1Epoch);
+        const epochTimestamp : string = epochGregorian.year 
+                             + "-" + toFixed(epochGregorian.month)
+                             + "-" + toFixed(epochGregorian.mday)
+                             + "T" + toFixed(epochGregorian.hour)
+                             + ":" + toFixed(epochGregorian.minute)
+                             + ":" + toFixed(Math.floor(epochGregorian.second))
+                             + "." + (epochGregorian.second % 1.0).toFixed(6).substring(2);
+
+        const json : ITle = {
+            "OBJECT_NAME"         : this.title,
+            "OBJECT_ID"           : launchYear + "-" + this.intLaunchNum + this.intLaunchPiece,
+            "EPOCH"               : epochTimestamp,
+            "MEAN_MOTION"         : this.meanMotion,
+            "ECCENTRICITY"        : this.eccentricity,
+            "INCLINATION"         : this.inclination,
+            "RA_OF_ASC_NODE"      : this.raAscNode,
+            "ARG_OF_PERICENTER"   : this.argPerigee,
+            "MEAN_ANOMALY"        : this.meanAnomaly,
+            "EPHEMERIS_TYPE"      : this.ephemerisType,
+            "CLASSIFICATION_TYPE" : this.classification,
+            "NORAD_CAT_ID"        : this.catalogNumber,
+            "ELEMENT_SET_NO"      : this.elementSetNo,
+            "REV_AT_EPOCH"        : this.revNoAtEpoch,
+            "BSTAR"               : this.dragTerm,
+            "MEAN_MOTION_DOT"     : this.meanMotionDer,
+            "MEAN_MOTION_DDOT"    : this.meanMotionDer2
+        };
+
+        return json;
     }
 
     /**
