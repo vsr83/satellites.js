@@ -186,8 +186,8 @@ export class Tle
         tle.catalogNumber  = json["NORAD_CAT_ID"];
         tle.classification = json["CLASSIFICATION_TYPE"];
         tle.intLaunchYear  = json["OBJECT_ID"].substring(2, 4);
-        tle.intLaunchNum   = json["OBJECT_ID"].substring(6, 8);
-        tle.intLaunchPiece = json["OBJECT_ID"].substring(8, 9);
+        tle.intLaunchNum   = json["OBJECT_ID"].substring(5, 8);
+        tle.intLaunchPiece = json["OBJECT_ID"].substring(8, 11);
         tle.meanMotionDer  = json["MEAN_MOTION_DOT"];
         tle.meanMotionDer2 = json["MEAN_MOTION_DDOT"];
         tle.dragTerm       = json["BSTAR"];
@@ -482,7 +482,7 @@ export class Tle
         }
 
         const line0 = this.title;
-        const line1 = "1" + " " 
+        const line1NoChecksum = "1" + " " 
                     + addIntPrefix(this.catalogNumber, 5, "0") + this.classification + " " 
                     + this.intLaunchYear + this.intLaunchNum + this.intLaunchPiece + " " 
                     + (this.epochYear % 100).toString() + degreeWhole(this.epochFracDay) + degreeFrac(this.epochFracDay, 8) + " "
@@ -490,9 +490,8 @@ export class Tle
                     + expNotation(this.meanMotionDer2) + " " 
                     + expNotation(this.dragTerm) + " " 
                     + this.ephemerisType + " " 
-                    + addIntPrefix(this.elementSetNo, 4, " ") 
-                    + this.checkSum1;
-        const line2 = "2" + " "
+                    + addIntPrefix(this.elementSetNo, 4, " ");
+        const line2NoChecksum = "2" + " "
                     + addIntPrefix(this.catalogNumber2, 5, "0") + " " 
                     + degreeWhole(this.inclination) + degreeFrac(this.inclination, 4) + " "
                     + degreeWhole(this.raAscNode) + degreeFrac(this.raAscNode, 4) + " "
@@ -500,8 +499,9 @@ export class Tle
                     + degreeWhole(this.argPerigee) + degreeFrac(this.argPerigee, 4) + " "
                     + degreeWhole(this.meanAnomaly) + degreeFrac(this.meanAnomaly, 4) + " "
                     + addIntPrefix(Math.floor(this.meanMotion), 2, " ") + degreeFrac(this.meanMotion, 8)
-                    + addIntPrefix(this.revNoAtEpoch, 5, " ")
-                    + this.checkSum2;
+                    + addIntPrefix(this.revNoAtEpoch, 5, " ");
+        const line1 = line1NoChecksum + Tle.lineChecksum(line1NoChecksum);
+        const line2 = line2NoChecksum + Tle.lineChecksum(line2NoChecksum);
 
         return [line0, line1, line2];
     }
