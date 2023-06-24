@@ -219,6 +219,41 @@ export class Tle
      */
     static fromLines(lines : string[]) : Tle
     {
+        const tle : Tle = new Tle();
+
+        /**
+         * Fill from a JSON.
+         * 
+         * @param {ITle} json 
+         *      The JSON.
+         */
+        function fillFromJson(json : any)
+        {
+            tle.title = json.title;
+            tle.catalogNumber = json.catalogNumber;
+            tle.classification = json.classification;
+            tle.intLaunchYear = json.intLaunchYear;
+            tle.intLaunchNum = json.intLaunchNum;
+            tle.intLaunchPiece = json.intLaunchPiece;
+            tle.epochYear = json.epochYear;
+            tle.epochFracDay = json.epochFracDay;
+            tle.meanMotionDer = json.meanMotionDer;
+            tle.meanMotionDer2 = json.meanMotionDer2;
+            tle.dragTerm = json.dragTerm;
+            tle.ephemerisType = json.ephemerisType;
+            tle.elementSetNo = json.elementSetNo;
+            tle.checkSum1 = json.checkSum1;
+            tle.catalogNumber2 = json.catalogNumber2;
+            tle.inclination = json.inclination;
+            tle.raAscNode = json.raAscNode;
+            tle.eccentricity = json.eccentricity;
+            tle.argPerigee = json.argPerigee;
+            tle.meanAnomaly = json.meanAnomaly;
+            tle.meanMotion = json.meanMotion;
+            tle.revNoAtEpoch = json.revNoAtEpoch;
+            tle.checkSum2 = json.checkSum2;
+        }
+
         const json : any = {};
 
         for (let indField = 0; indField < tleFormat.length; indField++)
@@ -252,7 +287,7 @@ export class Tle
                 break;
             }
         }
-        const tle : Tle = Tle.fromJson(json);
+        fillFromJson(json);
 
         tle.checkSumValid = (Tle.lineChecksum(lines[1]) == tle.checkSum1) &&
                             (Tle.lineChecksum(lines[2]) == tle.checkSum2);
