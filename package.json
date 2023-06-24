@@ -1,0 +1,24 @@
+{
+  "name": "orbits.ts",
+  "version": "1.0.0",
+  "description": "TypeScript version of the JavaScript library for computational astronomy",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx mocha -t 100000 -r ts-node/register test/*.spec.ts",
+    "buildts": "tsc --build",
+    "build": "webpack --mode production",
+    "clean": "tsc --build --clean"
+  },
+  "author": "Ville Räisänen",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/mocha": "^10.0.1",
+    "ts-loader": "^9.4.2",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^4.9.5",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "mocha": "^10.2.0"
+  }
+}
