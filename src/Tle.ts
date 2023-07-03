@@ -1,4 +1,5 @@
 import {GregorianTime, JulianTime} from "./JulianTime";
+import { TargetInfo } from "./Target";
 
 enum TleFieldType {
     FIELD_NUMBER,
@@ -138,10 +139,10 @@ export class Tle
     /**
      * Fill from a JSON.
      * 
-     * @param {ITle} json 
+     * @param {TargetInfo} json 
      *      The JSON.
      */
-    static fromJson(json : ITle) : Tle
+    static fromJson(json : TargetInfo) : Tle
     {
         const tle : Tle = new Tle();
 
@@ -177,30 +178,30 @@ export class Tle
             "MEAN_MOTION_DDOT":0}
         */
 
-        tle.epochYear = parseInt(json["EPOCH"].substring(0, 4));
+        tle.epochYear = parseInt((<string> json["EPOCH"]).substring(0, 4));
         const jtEpochYear = JulianTime.timeJulianYmdhms(tle.epochYear, 1, 1, 0, 0, 0);
-        tle.jtUt1Epoch = parseEpoch(json["EPOCH"]);
+        tle.jtUt1Epoch = parseEpoch(<string> json["EPOCH"]);
         tle.epochFracDay = tle.jtUt1Epoch - jtEpochYear;
     
-        tle.title          = json["OBJECT_NAME"];
-        tle.catalogNumber  = json["NORAD_CAT_ID"];
-        tle.classification = json["CLASSIFICATION_TYPE"];
-        tle.intLaunchYear  = json["OBJECT_ID"].substring(2, 4);
-        tle.intLaunchNum   = json["OBJECT_ID"].substring(5, 8);
-        tle.intLaunchPiece = json["OBJECT_ID"].substring(8, 11);
-        tle.meanMotionDer  = json["MEAN_MOTION_DOT"];
-        tle.meanMotionDer2 = json["MEAN_MOTION_DDOT"];
-        tle.dragTerm       = json["BSTAR"];
-        tle.ephemerisType  = json["EPHEMERIS_TYPE"];
-        tle.elementSetNo   = json["ELEMENT_SET_NO"];
-        tle.catalogNumber2 = json["NORAD_CAT_ID"];
-        tle.inclination    = json["INCLINATION"];
-        tle.raAscNode      = json["RA_OF_ASC_NODE"];
-        tle.eccentricity   = json["ECCENTRICITY"];
-        tle.argPerigee     = json["ARG_OF_PERICENTER"];
-        tle.meanAnomaly    = json["MEAN_ANOMALY"];
-        tle.meanMotion     = json["MEAN_MOTION"];
-        tle.revNoAtEpoch   = json["REV_AT_EPOCH"];
+        tle.title          = <string> json["OBJECT_NAME"];
+        tle.catalogNumber  = <number> json["NORAD_CAT_ID"];
+        tle.classification = <string> json["CLASSIFICATION_TYPE"];
+        tle.intLaunchYear  = (<string>json["OBJECT_ID"]).substring(2, 4);
+        tle.intLaunchNum   = (<string>json["OBJECT_ID"]).substring(5, 8);
+        tle.intLaunchPiece = (<string>json["OBJECT_ID"]).substring(8, 11);
+        tle.meanMotionDer  = <number> json["MEAN_MOTION_DOT"];
+        tle.meanMotionDer2 = <number> json["MEAN_MOTION_DDOT"];
+        tle.dragTerm       = <number> json["BSTAR"];
+        tle.ephemerisType  = <number> json["EPHEMERIS_TYPE"];
+        tle.elementSetNo   = <number> json["ELEMENT_SET_NO"];
+        tle.catalogNumber2 = <number> json["NORAD_CAT_ID"];
+        tle.inclination    = <number> json["INCLINATION"];
+        tle.raAscNode      = <number> json["RA_OF_ASC_NODE"];
+        tle.eccentricity   = <number> json["ECCENTRICITY"];
+        tle.argPerigee     = <number> json["ARG_OF_PERICENTER"];
+        tle.meanAnomaly    = <number> json["MEAN_ANOMALY"];
+        tle.meanMotion     = <number> json["MEAN_MOTION"];
+        tle.revNoAtEpoch   = <number> json["REV_AT_EPOCH"];
 
         const lines = tle.toLines();
         tle.checkSum1 = parseInt(lines[1].substring(68, 69));
@@ -297,7 +298,7 @@ export class Tle
         return tle;
     }
 
-    toJson() : ITle
+    toJson() : TargetInfo
     {
         /*{
         "OBJECT_NAME":"IRNSS-1J",
@@ -350,7 +351,8 @@ export class Tle
                              + ":" + toFixed(Math.floor(epochGregorian.second))
                              + "." + (epochGregorian.second % 1.0).toFixed(6).substring(2);
 
-        const json : ITle = {
+        const json : TargetInfo = {
+            "TYPE"                : "TLE",
             "OBJECT_NAME"         : this.title,
             "OBJECT_ID"           : launchYear + "-" + this.intLaunchNum + this.intLaunchPiece,
             "EPOCH"               : epochTimestamp,

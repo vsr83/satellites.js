@@ -1,9 +1,9 @@
 import { TargetCollection, TargetInfo, TargetInfoCollection, TargetInfoField } from "./Target";
 
 /**
- * Class implementing the internals of the target list.
+ * Class implementing the internals of the target list dialog.
  */
-export class TargetList
+export class TargetView
 {
     // DOM elements used by the target list.
     elementListTable : HTMLTableElement;
@@ -133,6 +133,7 @@ export class TargetList
             // Fill target list:
             const item : TargetInfo = data[indTarget];
             const row : HTMLTableRowElement = this.listBody.insertRow();
+            
             for (let indField = 0; indField < this.columns.length; indField++)
             {
                 const fieldName = this.columns[indField];

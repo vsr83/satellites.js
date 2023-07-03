@@ -1,4 +1,4 @@
-import { TargetCollection, TargetInfoField } from "./Target";
+import { TargetCollection, TargetInfoField, TargetInfo } from "./Target";
 import { Tle } from "./Tle";
 
 export type FleetCollection = {
@@ -10,7 +10,7 @@ export type FleetCollection = {
  */
 export class Dataset  
 {
-    fleetCollection : FleetCollection;
+    private fleetCollection : FleetCollection;
     keyField : string;
 
     constructor(keyField : string)
@@ -19,11 +19,28 @@ export class Dataset
         this.keyField = keyField;
     }
 
-    addTle(tle : Tle, fleet : string)
+    /**
+     * Add TLE to the dataset.
+     * 
+     * @param {Tle} tle 
+     *      TLE as an Tle object.
+     * @param {string} fleetName 
+     *      Name of the fleet.
+     */
+    addTle(tle : Tle, fleetName : string)
     {
-
+        if (fleetName in this.fleetCollection)
+        {
+            const targetInfo : TargetInfo = tle.toJson();
+            this.fleetCollection[fleetName].addTarget(tle.toJson());
+        }
     }
 
+    /**
+     * Add Orbit State Vector to the dataset.
+     * 
+     * @param {string} fleet 
+     */
     addOsv(fleet : string)
     {
         // TODO
@@ -42,6 +59,77 @@ export class Dataset
         for (const [fleetName, fleet] of Object.entries(this.fleetCollection)) 
         {
             delete this.fleetCollection[fleetName];
+        }
+    }
+
+    /**
+     * Add an empty fleet.
+     * 
+     * @param {string} fleetName
+     *      Name of the fleet.
+     * @returns {boolean} If the does not exist.
+     */
+    addFleet(fleetName : string) : boolean
+    {
+        if (fleetName in this.fleetCollection)
+        {
+            return false;
+        }
+        else 
+        {
+            this.fleetCollection[fleetName] = new TargetCollection(this.keyField);
+
+            return true;
+        }
+    }
+
+    /**
+     * Remove fleet.
+     * 
+     * @param {string} fleetName
+     *      Name of the fleet.
+     * @returns {boolean} If the fleet existed.
+     */
+    removeFleet(fleet : string) : boolean
+    {
+        if (fleet in this.fleetCollection)
+        {
+            delete this.fleetCollection[fleet];
+            return true;
+        }
+        else 
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Remove fleet.
+     * 
+     * @param {string} fleet 
+     *      Name of the fleet.
+     */
+    hasFleet(fleet : string) : boolean
+    {
+        return fleet in this.fleetCollection;
+    }
+
+    /**
+     * Get fleet.
+     * 
+     * @param {string} fleet 
+     *      Fleet name.
+     * @returns {TargetCollection} The fleet data.
+     */
+    getFleet(fleet : string) : TargetCollection
+    {
+        if (this.hasFleet(fleet))
+        {
+            return this.fleetCollection[fleet];
+        }
+        else 
+        {
+            throw Error("Fleet \"" + fleet + "\" does not exist!");
         }
     }
 
@@ -127,7 +215,7 @@ export class Dataset
 
             if (sourceFleetName in this.fleetCollection)
             {
-                const sourceFleet : TargetCollection = TargetCollection[sourceFleetName];
+                const sourceFleet : TargetCollection = this.fleetCollection[sourceFleetName];
                 const keys : TargetInfoField[] = sourceFleet.getKeys();
 
                 for (let indKey = 0; indKey < keys.length; indKey++)
@@ -151,7 +239,7 @@ export class Dataset
      */
     exportToJson() : string
     {
-        const jsonOut = {};
+        const jsonOut : any = {};
 
         for (const [fleetName, fleet] of Object.entries(this.fleetCollection)) 
         {

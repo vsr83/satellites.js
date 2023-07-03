@@ -334,6 +334,7 @@ export class Sgp4Propagation
     }
 
     /**
+     * Compute Orbit State Vector (OSV)
      * 
      * @param {number} su 
      *      Osculating sum of the eccentric anomaly and the argument of periapsis (radians)
@@ -347,7 +348,7 @@ export class Sgp4Propagation
      *      
      * @param {number} rvdot 
      * 
-     * @returns 
+     * @returns The orbit state vector.
      */
     computeOsv(su : number, xnode : number, xinc : number, mrt : number, mvt : number, rvdot : number)
     {
