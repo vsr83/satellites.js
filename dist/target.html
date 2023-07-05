@@ -1,0 +1,94 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="target.css">
+    </head>
+    <body>
+        <script src="./satellites.js"></script>
+
+        <div id="targetSelectDialogContainer">
+            <fieldset class="tables" id="tableFieldSet">
+                <legend>Target Selection</legend>
+                <input type="text" id="myInput"  placeholder="Filter" title="Type in a name">
+                <button id="clearButton">Clear</button>
+                <button id="selectAllButton">Select All</button>
+                <p id="selectionCount">LOADING</p>
+
+                <!--fieldset class="tables" id="targetTableContainer"-->
+                <fieldset class="tables" id="targetTableContainer2">
+                    <legend>Targets</legend>
+                    <div id="targetTableContainer">
+                        <table id="targetTable"></table>
+                    </div>
+                </fieldset>
+                <!--/fieldset-->
+                <fieldset class="tables" id="selectTableContainer2">
+                    <legend>Selected</legend>
+                    <div id="selectTableContainer">
+                        <table id="selectTable"></table>
+                    </div>
+                </fieldset>
+
+                <button id="targetCancelButton">Cancel</button>
+                <button id="targetOkButton">Ok</button>
+            </fieldset>
+        </div>
+
+        <script>
+            const elementListTable = document.getElementById("targetTable");
+            const elementSelectionTable = document.getElementById("selectTable");
+            const elementClearButton = document.getElementById("clearButton");
+            const elementSelectAllButton = document.getElementById("selectAllButton");
+            const elementFilterText = document.getElementById("myInput");
+            const selectionCountText = document.getElementById("selectionCount");
+
+            const elementList = new satellites.TargetView(
+                elementListTable,
+                elementSelectionTable,
+                elementClearButton,
+                elementSelectAllButton,
+                elementFilterText, 
+                selectionCountText,
+                ["OBJECT_ID", "OBJECT_NAME"], 
+                1);
+
+
+            var xmlHTTP = new XMLHttpRequest();
+            xmlHTTP.onreadystatechange = function()
+            {
+
+
+                console.log("readyState: " + this.readyState);
+                console.log("status:     " + this.status);
+            
+                if (this.readyState == 4 && this.status == 200)
+                {
+                    const fields = [
+                                    'OBJECT_ID',
+                                    'OBJECT_NAME',
+                                    //'ARG_OF_PERICENTER',
+                                    //'BSTAR',
+                                    //'CLASSIFICATION_TYPE',
+                                    //'EPOCH',
+                                    //'ECCENTRICITY',
+                                    //'ELEMENT_SET_NO',
+                                    //'EPHEMERIS_TYPE',
+                                    //'INCLINATION',
+                                    //'MEAN_ANOMALY',
+                                    //'MEAN_MOTION',
+                                    //'MEAN_MOTION_DDOT',
+                                    //'MEAN_MOTION_DOT',
+                                    //'NORAD_CAT_ID',
+                                    //'RA_OF_ASC_NODE',
+                                    //'REV_AT_EPOCH'
+                                ];
+
+                    let dataJSON = JSON.parse(this.responseText);
+                    elementList.loadData(dataJSON);
+                }
+            }
+            xmlHTTP.open("GET", "satellites.json", true);
+            xmlHTTP.send();
+
+        </script>
+    </body>
+</html>

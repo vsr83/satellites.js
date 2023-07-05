@@ -1,0 +1,158 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="dataset.css">
+    </head>
+    <body>
+        <script src="./satellites.js"></script>
+
+        <div id="datasetDialogContainer">
+            <fieldset class="tables" id="datasetFieldset">
+                <legend>Dataset Configuration</legend>
+                <fieldset class="tables" id="fleetFieldset">
+                    <legend>Fleet Selection</legend>
+
+
+                    <label for="fleetSelect" id="fleetSelectLabel">Fleet:</label>
+                    <select name="Fleet" id="fleetSelect">
+                        <option value="default">default</option>
+                    </select>
+                    <button type="button" id="fleetAddButton">Add</button>
+                    <button type="button" id="fleetRemoveButton">Remove</button>
+                </fieldset>
+
+                <fieldset class="tables" id="datasetTableFieldset">
+                    <legend>Targets</legend>
+                    <input type="text" id="datasetTargetsFilter"  placeholder="Filter" title="Type in a name">
+                    <!--button id="datasetTargetsDeleteButton">Delete</button-->
+                    <div id="datasetTargetsDeleteContainer">
+                        <label for="datasetTargetsDelete">Delete</label>
+                        <input type="checkbox" id="datasetTargetsDelete"></input>
+                    </div>
+
+                    <!--button id="datasetTargetsMoveButton">Move</button>
+                    <button id="datasetTargetsEdit">Edit</button-->
+                    <button id="datasetTargetsClear">Clear</button>
+    
+                    <div id="datasetTableContainer">
+                        <table id="datasetTable"></table>
+                    </div>
+                </fieldset>
+                <fieldset class="tables" id="datasetTextFieldset">
+                    <legend>Target JSON</legend>
+                    <div id="datasetTextContainer">
+                        <textarea id="datasetText" rows="10" cols="40" readonly></textarea>
+                    </div>
+                </fieldset>
+                <fieldset class="tables" id="datasetAddFieldset">
+                    <legend>Add Data</legend>
+                    <div id="datasetAddContainer">
+                        <button type="button" id="datasetAddTle">TLEs</button>
+                        <button type="button" id="datasetAddOsv">OSVs</button>
+                        <button type="button" id="datasetAddKepler">Kepler</button>
+                        <button type="button" id="datasetImportJson">JSON</button>
+                    </div>
+                </fieldset>
+
+                <p id="datasetCount">LOADING</p>
+                <button id="datasetCloseButton">Close</button>
+
+            </fieldset>
+        </div>
+
+        <div id="TLEListcontainer">
+            <fieldset class="tables" id="TLElistfieldset">
+                <legend>Add TLEs</legend>
+
+                <label for="TLEListinput">Paste a list of 3-line TLEs below:</label><br>
+                <a href="https://celestrak.com/NORAD/elements/" target="_blank"> See CelesTrak for available TLEs.</a>
+                <textarea id="TLEListinput" rows="10" cols="69"></textarea>
+                <button id="TLEListEnter">Enter</button>
+                <button id="TLEListCancel">Cancel</button>
+            </fieldset>
+        </div>
+        
+        <script>
+            var xmlHTTP = new XMLHttpRequest();
+            xmlHTTP.onreadystatechange = function()
+            {
+                console.log("readyState: " + this.readyState);
+                console.log("status:     " + this.status);
+            
+                if (this.readyState == 4 && this.status == 200)
+                {
+                    const fields = [
+                                    'OBJECT_ID',
+                                    'OBJECT_NAME',
+                                    //'ARG_OF_PERICENTER',
+                                    //'BSTAR',
+                                    //'CLASSIFICATION_TYPE',
+                                    //'EPOCH',
+                                    //'ECCENTRICITY',
+                                    //'ELEMENT_SET_NO',
+                                    //'EPHEMERIS_TYPE',
+                                    //'INCLINATION',
+                                    //'MEAN_ANOMALY',
+                                    //'MEAN_MOTION',
+                                    //'MEAN_MOTION_DDOT',
+                                    //'MEAN_MOTION_DOT',
+                                    //'NORAD_CAT_ID',
+                                    //'RA_OF_ASC_NODE',
+                                    //'REV_AT_EPOCH'
+                                ];
+
+                    //let dataJSON = JSON.parse(this.responseText);
+                    //elementList.loadData(dataJSON);
+                    console.log(this.responseText.length);
+                    const lines = this.responseText.split('\n');
+                    const numElem = (lines.length + 1) / 3;
+
+                    for (let indElem = 0; indElem < Math.floor(numElem); indElem++)
+                    {
+                        let title = lines[indElem * 3].trim();
+
+                        const tleLine1 = lines[indElem * 3 + 1];
+                        const tleLine2 = lines[indElem * 3 + 2];
+
+                        const tle = satellites.Tle.fromLines([title, tleLine1, tleLine2]);
+                        //dataset.addTle(tle, "default");
+                        //console.log(title);
+                    }
+                    datasetView.update();
+                }
+            }
+            xmlHTTP.open("GET", "../data/active.txt", true);
+            xmlHTTP.send();
+
+            const dataset = new satellites.Dataset("OBJECT_ID");
+            dataset.addFleet("default");
+            const datasetView = new satellites.DatasetView(dataset);
+            datasetView.setElements("datasetDialogContainer",
+                                    "datasetCloseButton",
+                                    "fleetSelect",
+                                    "fleetAddButton",
+                                    "fleetRemoveButton",
+                                    "datasetCount",
+                                    "datasetAddTle",
+                                    "datasetAddOsv",
+                                    "datasetAddKepler",
+                                    "datasetImportJson",
+                                    "datasetTargetsFilter",
+                                    "datasetTargetsDelete",
+                                    "datasetTargetsClear",
+                                    "datasetTable",
+                                    "datasetText");
+            datasetView.setTleElements("TLEListcontainer",
+                                       "TLEListinput",
+                                       "TLEListEnter",
+                                       "TLEListCancel");
+
+            const dialog = document.getElementById("datasetDialogContainer");
+            dialog.addEventListener("closeDialog", function() {
+                console.log("Received closeDialog");
+            });
+            dialog.addEventListener("updateDataset", function() {
+                console.log("Received updateDataset");
+            });
+        </script>
+    </body>
+</html>
