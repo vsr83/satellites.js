@@ -240,19 +240,22 @@ export class DatasetView
 
         this.eventCloseDialog = new Event("closeDialog", {});
         this.eventUpdateDataset = new Event("updateDataset", {});
-        console.log("EVENT" + this.eventCloseDialog);
-        console.log("EVENT" + this.eventUpdateDataset);
-
 
         this.elementTargetsListBody = this.elementTargetsListTable.createTBody();
         this.fleetSelect();
     }
 
+    /**
+     * Show the dialog.
+     */
     show()
     {
         this.elementDialog.style.visibility = "visible";
     }
 
+    /**
+     * Hide the dialog. Typically from pressing the Close button.
+     */
     hide()
     {
         this.elementDialog.style.visibility = "hidden";
@@ -305,6 +308,7 @@ export class DatasetView
             }
         }
 
+        this.dataset.getFleet(fleet).removeTarget(target);
         this.elementDialog.dispatchEvent(this.eventUpdateDataset);
         this.updateCount();
     }
@@ -359,6 +363,7 @@ export class DatasetView
             }
         }        
         
+        // Clear the targets table.
         const rows = this.elementTargetsListBody.rows;
         
         // rows.length will change value during the loop.
@@ -369,6 +374,7 @@ export class DatasetView
             this.elementTargetsListBody.deleteRow(-1);
         }
 
+        // Refill the targets table.
         const collection : TargetCollection = this.dataset.getFleet(this.currentFleet);
         const keyField : string = collection.keyField;
         const data : TargetInfoCollection = collection.data;
