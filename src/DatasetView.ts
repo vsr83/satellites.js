@@ -48,6 +48,10 @@ export class DatasetView
     // The dataset the view is representing.
     private dataset : Dataset;
 
+    // Two events created for the dialog.
+    private eventUpdateDataset   : Event;
+    private eventCloseDialog     : Event;
+
     constructor(dataset : Dataset)
     {
         this.dataset = dataset;
@@ -234,6 +238,12 @@ export class DatasetView
         //this.elementTargetsEditButton.addEventListener("click", this.targetsEdit.bind(this));
         this.elementTargetsFilter.addEventListener("keyup", this.textOnKeyUp.bind(this));
 
+        this.eventCloseDialog = new Event("closeDialog", {});
+        this.eventUpdateDataset = new Event("updateDataset", {});
+        console.log("EVENT" + this.eventCloseDialog);
+        console.log("EVENT" + this.eventUpdateDataset);
+
+
         this.elementTargetsListBody = this.elementTargetsListTable.createTBody();
         this.fleetSelect();
     }
@@ -246,23 +256,36 @@ export class DatasetView
     hide()
     {
         this.elementDialog.style.visibility = "hidden";
+        this.elementDialog.dispatchEvent(this.eventCloseDialog);
     }
 
+    /**
+     * Update the target info to contain the JSON for a target.
+     * 
+     * @param {string} fleet 
+     *      Fleet name.
+     * @param {string} target 
+     *      Target name.
+     */
     selectTarget(fleet : string, target : string)
     {
         console.log("selectTarget " + fleet + " " + target);
 
         const targetStr : string = JSON.stringify(this.dataset.getFleet(fleet).getTarget(target)).replace(/\,/gi, ",&#10;");
         this.elementDatasetText.innerHTML = targetStr;
-        console.log(targetStr);
-
-        console.log(this.dataset.getFleet(fleet).getTarget(target));
     }
 
+    /**
+     * Delete target.
+     * 
+     * @param {string} fleet 
+     *      Fleet name.
+     * @param {string} target 
+     *      Target name.
+     */
     deleteTarget(fleet : string, target : string)
     {
         console.log("deleteTarget " + fleet + " " + target);
-        console.log(this.dataset.removeTarget(target))
 
         // Remove the row element.
         for (let row = 0; row < this.elementTargetsListBody.rows.length; row++)
@@ -281,6 +304,8 @@ export class DatasetView
                 }
             }
         }
+
+        this.elementDialog.dispatchEvent(this.eventUpdateDataset);
         this.updateCount();
     }
 
@@ -311,6 +336,9 @@ export class DatasetView
         }
     }
 
+    /**
+     * Update the target list to match the current fleet data.
+     */
     update()
     {
         function createTargetListClickHandler(key : TargetInfoField)
@@ -362,9 +390,13 @@ export class DatasetView
             newCell2.appendChild(newText2);
         }
 
+        this.elementDialog.dispatchEvent(this.eventUpdateDataset);
         this.updateCount();
     }
 
+    /**
+     * Update target count label.
+     */
     updateCount()
     {
         this.elementFleetNumLabel.innerText = this.dataset.getFleet(this.currentFleet).getLength() + " targets";
