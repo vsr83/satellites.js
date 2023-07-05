@@ -1,11 +1,14 @@
 import { TargetCollection, TargetInfo, TargetInfoCollection, TargetInfoField } from "./Target";
 import { Dataset } from "./Dataset";
-
+import { Tle } from "./Tle";
 /**
  * Class implementing the internals of the dataset dialog.
  */
 export class DatasetView 
 {
+    private elementDialog              : HTMLElement;
+    private elementCloseButton         : HTMLElement;
+
     // Fleet Selection fieldset elements.
     private elementFleetSelect         : HTMLSelectElement;
     private elementFleetAddButton      : HTMLElement;
@@ -21,16 +24,26 @@ export class DatasetView
     // Targets fieldset elements.
     private elementTargetsFilter       : HTMLInputElement;
     private elementTargetsDeleteButton : HTMLElement;
-    private elementTargetsMoveButton   : HTMLElement;
-    private elementTargetsEditButton   : HTMLElement;
+    private elementTargetsClearButton  : HTMLElement;
+    //private elementTargetsMoveButton   : HTMLElement;
+    //private elementTargetsEditButton   : HTMLElement;
     private elementTargetsListTable    : HTMLTableElement;
     private elementTargetsListBody     : HTMLTableSectionElement;
 
     // Target JSON fieldset elements
     private elementDatasetText : HTMLTextAreaElement;
 
+    // TLE list dialog elements.
+    private elementTleContainer    : HTMLElement;
+    private elementTleListInput    : HTMLTextAreaElement;
+    private elementTleEnterButton  : HTMLElement;
+    private elementTleCancelButton : HTMLElement;
+
     // The current fleet.
     private currentFleet : string;
+
+    // The current target.
+    private currentTarget : string;
 
     // The dataset the view is representing.
     private dataset : Dataset;
@@ -40,9 +53,91 @@ export class DatasetView
         this.dataset = dataset;
     }
 
+    setTleElements(elementTlecontainer : string, 
+        elementTleListInput : string,
+        elementTleEnterButton : string,
+        elementTleCancelButton : string)
+    {
+        function getElement(id : string) : HTMLElement
+        {
+            const elem : HTMLElement | null = document.getElementById(id);
+            if (elem === null)
+            {
+                throw Error("Element \"" + id + "\" not found!");
+            }
+            return elem;
+        }
+        try 
+        {
+            this.elementTleContainer = getElement(elementTlecontainer);
+            this.elementTleListInput = <HTMLTextAreaElement>getElement(elementTleListInput);
+            this.elementTleEnterButton = getElement(elementTleEnterButton);
+            this.elementTleCancelButton = getElement(elementTleCancelButton);
+        }
+        catch (e : any)
+        {
+            throw e;
+        }
+        this.elementTleEnterButton.addEventListener("click", this.tleDialogEnter.bind(this));
+        this.elementTleCancelButton.addEventListener("click", this.tleDialogCancel.bind(this));
+
+    }
+
+    /**
+     * Handle Enter button click.
+     */
+    tleDialogEnter()
+    {
+        console.log("tleDialogEnter");
+        this.elementTleContainer.style.visibility = "hidden";
+
+        const tleData : string = this.elementTleListInput.value;
+        const lines : string[] = tleData.split('\n');
+        const numElem : number = Math.floor(lines.length / 3);
+
+        for (let indElem = 0; indElem < numElem; indElem++)
+        {
+            const tleLines : string[] = [
+                lines[indElem * 3], lines[indElem * 3 + 1], lines[indElem * 3 + 2]
+            ];
+            const tle : Tle = Tle.fromLines(tleLines);
+            const json : TargetInfo = tle.toJson();
+
+            const fleetData : TargetCollection = this.dataset.getFleet(this.currentFleet);
+            if (!tle.checkSumValid)
+            {
+                console.log("Target " + json.OBJECT_ID + " has invalid checksum.");
+            }
+            else if (fleetData.containsTarget(json))
+            {
+                console.log("Target " + json.OBJECT_ID + " already contained in the dataset.");
+            }
+            else 
+            {
+                fleetData.addTarget(json);
+            }
+        }
+
+        this.elementTleListInput.value = "";
+        this.update();
+    }
+
+    /**
+     * Handle Cancel button click.
+     */
+    tleDialogCancel()
+    {
+        console.log("tleDialogCancel");
+        this.elementTleContainer.style.visibility = "hidden";
+        this.elementTleListInput.value = "";
+    }
+
     /**
      * Set HTML element ids for all dialog elements.
-     * 
+     * @param {string} elementDialog
+     *      Element id.
+     * @param {string} elementCloseButton
+     *      Element id.
      * @param {string} elementFleetSelect 
      *      Element id.
      * @param {string} elementFleetAddButton 
@@ -71,7 +166,9 @@ export class DatasetView
      *      Element id.
      * @throws {Error} If one of the element ids cannot be found.
      */
-    setElements(elementFleetSelect : string,
+    setElements(elementDialog      : string,
+        elementCloseButton         : string,
+        elementFleetSelect         : string,
         elementFleetAddButton      : string,
         elementFleetRemoveButton   : string,
         elementFleetNumLabel       : string,
@@ -81,9 +178,9 @@ export class DatasetView
         elementAddDataJsonButton   : string,
         elementTargetsFilter       : string,
         elementTargetsDeleteButton : string,
-        elementTargetsMoveButton   : string,
-        elementTargetsEditButton   : string,
-        elementTargetsListTable    : string)
+        elementTargetsClearButton  : string,
+        elementTargetsListTable    : string,
+        elementDatasetText         : string)
     {
         function getElement(id : string) : HTMLElement
         {
@@ -98,6 +195,8 @@ export class DatasetView
 
         try
         {
+            this.elementDialog = getElement(elementDialog);
+            this.elementCloseButton = getElement(elementCloseButton);
             this.elementFleetSelect = <HTMLSelectElement> getElement(elementFleetSelect);
             this.elementFleetAddButton = getElement(elementFleetAddButton);
             this.elementFleetRemoveButton = getElement(elementFleetRemoveButton);
@@ -109,14 +208,17 @@ export class DatasetView
             this.elementAddDataJsonButton = getElement(elementAddDataJsonButton);
             this.elementTargetsFilter = <HTMLInputElement> getElement(elementTargetsFilter);
             this.elementTargetsDeleteButton = getElement(elementTargetsDeleteButton);
-            this.elementTargetsMoveButton = getElement(elementTargetsMoveButton);
-            this.elementTargetsEditButton = getElement(elementTargetsEditButton);
+            this.elementTargetsClearButton = getElement(elementTargetsClearButton);
+            //this.elementTargetsMoveButton = getElement(elementTargetsMoveButton);
+            //this.elementTargetsEditButton = getElement(elementTargetsEditButton);
             this.elementTargetsListTable = <HTMLTableElement> getElement(elementTargetsListTable);
+            this.elementDatasetText = <HTMLTextAreaElement>getElement(elementDatasetText);
         }
         catch (E : any)
         {
             throw E;
         }
+        this.elementCloseButton.addEventListener("click", this.hide.bind(this));
         
         this.elementFleetSelect.addEventListener("change", this.fleetSelect.bind(this));
         this.elementFleetAddButton.addEventListener("click", this.fleetAdd.bind(this));
@@ -127,15 +229,107 @@ export class DatasetView
         this.elementAddDataKeplerButton.addEventListener("click", this.addDataKepler.bind(this));
 
         this.elementTargetsDeleteButton.addEventListener("click", this.targetsDelete.bind(this));
-        this.elementTargetsMoveButton.addEventListener("click", this.targetsMove.bind(this));
-        this.elementTargetsEditButton.addEventListener("click", this.targetsEdit.bind(this));
+        this.elementTargetsClearButton.addEventListener("click", this.fleetClear.bind(this));
+        //this.elementTargetsMoveButton.addEventListener("click", this.targetsMove.bind(this));
+        //this.elementTargetsEditButton.addEventListener("click", this.targetsEdit.bind(this));
+        this.elementTargetsFilter.addEventListener("keyup", this.textOnKeyUp.bind(this));
 
         this.elementTargetsListBody = this.elementTargetsListTable.createTBody();
         this.fleetSelect();
     }
 
+    show()
+    {
+        this.elementDialog.style.visibility = "visible";
+    }
+
+    hide()
+    {
+        this.elementDialog.style.visibility = "hidden";
+    }
+
+    selectTarget(fleet : string, target : string)
+    {
+        console.log("selectTarget " + fleet + " " + target);
+
+        const targetStr : string = JSON.stringify(this.dataset.getFleet(fleet).getTarget(target)).replace(/\,/gi, ",&#10;");
+        this.elementDatasetText.innerHTML = targetStr;
+        console.log(targetStr);
+
+        console.log(this.dataset.getFleet(fleet).getTarget(target));
+    }
+
+    deleteTarget(fleet : string, target : string)
+    {
+        console.log("deleteTarget " + fleet + " " + target);
+        console.log(this.dataset.removeTarget(target))
+
+        // Remove the row element.
+        for (let row = 0; row < this.elementTargetsListBody.rows.length; row++)
+        {
+            const rowElem : HTMLTableRowElement = this.elementTargetsListBody.rows[row];
+            const colElement : HTMLTableCellElement = rowElem.getElementsByTagName("td")[0];
+
+            if (colElement) 
+            {
+                const txtValue : string = colElement.textContent || colElement.innerText;
+
+                if (target.toString() === txtValue)
+                {
+                    rowElem.remove();
+                    break;
+                }
+            }
+        }
+        this.updateCount();
+    }
+
+    /**
+     * Callback for the filter text field keyboard input.
+     */
+    textOnKeyUp()
+    {
+        const filterText = this.elementTargetsFilter.value.toUpperCase();
+
+        const rowElements : HTMLCollection = this.elementTargetsListBody.getElementsByTagName("tr");
+
+        for (let rowIndex = 0; rowIndex < rowElements.length; rowIndex++) 
+        {
+            const colElement : HTMLTableCellElement = rowElements[rowIndex].getElementsByTagName("td")[1];
+
+            if (colElement) 
+            {
+                const txtValue : string = colElement.textContent || colElement.innerText;
+
+                if (txtValue.toUpperCase().indexOf(filterText) > -1) 
+                {
+                    (<HTMLElement> rowElements[rowIndex]).style.display = "";
+                } else {
+                    (<HTMLElement> rowElements[rowIndex]).style.display = "none";
+                }
+            }       
+        }
+    }
+
     update()
     {
+        function createTargetListClickHandler(key : TargetInfoField)
+        {
+            return function()
+            {
+                if (this.elementTargetsDeleteButton.checked)
+                {
+                    console.log("Delete " + key);
+                    this.deleteTarget(this.currentFleet, key);
+                }
+                else 
+                {
+                    console.log("Select " + key);
+                    this.selectTarget(this.currentFleet, key);
+                    //this.tryAddSelection(key);
+                }
+            }
+        }        
         
         const rows = this.elementTargetsListBody.rows;
         
@@ -158,6 +352,7 @@ export class DatasetView
             const key = keys[indKey];
             //const fields : TargetInfoField = data[keys[indKey]];
             const row : HTMLTableRowElement = this.elementTargetsListBody.insertRow();
+            row.addEventListener("click", createTargetListClickHandler(key).bind(this));
 
             const newCell = row.insertCell();
             let newText = document.createTextNode(key.toString());
@@ -167,7 +362,12 @@ export class DatasetView
             newCell2.appendChild(newText2);
         }
 
-        this.elementFleetNumLabel.innerText = keys.length + " targets";
+        this.updateCount();
+    }
+
+    updateCount()
+    {
+        this.elementFleetNumLabel.innerText = this.dataset.getFleet(this.currentFleet).getLength() + " targets";
     }
 
     targetsDelete()
@@ -183,6 +383,13 @@ export class DatasetView
     targetsEdit()
     {
         console.log("targetsEdit");
+    }
+
+    fleetClear()
+    {
+        const fleetData : TargetCollection = this.dataset.getFleet(this.currentFleet);
+        fleetData.clear();
+        this.update();
     }
 
     /**
@@ -266,6 +473,7 @@ export class DatasetView
     addDataTle()
     {
         console.log("addDateTle");
+        this.elementTleContainer.style.visibility = "visible";
     }
 
     addDataJson()
