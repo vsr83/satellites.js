@@ -8,10 +8,14 @@ export class PanelView
 {
     // 
     private panel : Panel;
+    // Element id for the panel.
+    elementParentId : string;
     // DOM parent element for the panel.
     elementParent : HTMLElement;
     // DOM elements for the individual elements.
     elements : HTMLElement[];
+    // Icon size in pixels.
+    iconSize : number;
 
     /**
      * Public constructor.
@@ -19,12 +23,16 @@ export class PanelView
      * @param {Panel} panel 
      *      The panel.
      * @param {string} elementParentId
+     * @param {number} iconSize
+     *      Width and height of the icon in pixels.
      */
-    constructor(panel : Panel, elementParentId : string)
+    constructor(panel : Panel, elementParentId : string, iconSize : number)
     {
         this.panel = panel;
         this.elementParent = <HTMLElement> document.getElementById(elementParentId);
         this.elements = [];
+        this.elementParentId = elementParentId;
+        this.iconSize = iconSize;
     }
 
     /**
@@ -32,11 +40,27 @@ export class PanelView
      */
     create() : void
     {
+        console.log("PanelView.create");
         for (let indElem = 0; indElem < this.panel.getNumElements(); indElem++)
         {
-            const htmlElement = document.createElement("img");
+            const element : PanelElement = <PanelElement> this.panel.getElement(indElem);
+            const htmlElementDiv : HTMLElement = document.createElement("Div");
+            const htmlElement : HTMLElement = document.createElement("img");
+            htmlElement.setAttribute("id", this.elementParentId + "_" + indElem);
+            htmlElementDiv.className = "panelHighlight";
+            //htmlElement.setAttribute("style", "width : " + this.iconSize + "px");
+            htmlElement.style.width = this.iconSize + "px";
+            htmlElement.style.height = this.iconSize + "px";
             this.elements.push(htmlElement);
-            this.elementParent.appendChild(htmlElement);
+            this.elementParent.appendChild(htmlElementDiv);
+            htmlElementDiv.appendChild(htmlElement);
+
+            const ref = this;
+            htmlElement.addEventListener("click", function()
+            {
+                ref.panel.showElement(element.label);
+                ref.update();
+            });
         }
 
         this.update();
@@ -47,6 +71,7 @@ export class PanelView
      */
     update() : void 
     {
+        console.log("PanelView.update");
         for (let indElem = 0; indElem < this.panel.getNumElements(); indElem++)
         {
             const element : PanelElement = <PanelElement> this.panel.getElement(indElem);

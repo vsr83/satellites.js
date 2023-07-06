@@ -8,3 +8,22 @@ body
 {
     background-color: black;
 }
+
+.panelHighlight img:hover {
+    opacity: .9;
+
+}
+
+.panelHighlight {
+    background-color: white;
+    display: inline-block;
+
+}
+
+p
+{
+    color: white;
+    position: absolute;
+    top: 100px;
+    left: 100px;
+}

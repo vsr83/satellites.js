@@ -52,6 +52,7 @@ export class Panel
             imagePathLight : imagePathLight,
             imagePathDark : imagePathDark
         };
+        this.elements.push(element);
     }
 
     /**
@@ -109,10 +110,9 @@ export class Panel
     {
         if (index < 0 || index >= this.getNumElements())
         {
-            return this.elements[index];
+            return undefined;
         }
-
-        return undefined;
+        return this.elements[index];
     }
     
     /**
