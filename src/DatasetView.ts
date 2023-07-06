@@ -1,10 +1,11 @@
 import { TargetCollection, TargetInfo, TargetInfoCollection, TargetInfoField } from "./Target";
 import { Dataset } from "./Dataset";
 import { Tle } from "./Tle";
+import { IVisibility } from "./IVisibility";
 /**
  * Class implementing the internals of the dataset dialog.
  */
-export class DatasetView 
+export class DatasetView implements IVisibility
 {
     private elementDialog              : HTMLElement;
     private elementCloseButton         : HTMLElement;
@@ -243,6 +244,11 @@ export class DatasetView
 
         this.elementTargetsListBody = this.elementTargetsListTable.createTBody();
         this.fleetSelect();
+    }
+
+    isVisible()
+    {
+        return (this.elementDialog.style.visibility === "visible");
     }
 
     /**

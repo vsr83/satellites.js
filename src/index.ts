@@ -6,6 +6,10 @@ import {JulianTime, GregorianTime} from "./JulianTime";
 import {MathUtils} from "./MathUtils";
 import { Dataset } from "./Dataset";
 import { DatasetView } from "./DatasetView";
+import { IVisibility} from "./IVisibility";
+import { Panel } from "./Panel";
+import { PanelView } from "./PanelView";
+import { HelpView } from "./HelpView";
 
 export {TargetCollection};
 export {TargetView};
@@ -15,3 +19,7 @@ export {JulianTime, GregorianTime};
 export {MathUtils};
 export {Dataset};
 export {DatasetView};
+export {IVisibility}
+export {Panel};
+export {PanelView}
+export {HelpView};
