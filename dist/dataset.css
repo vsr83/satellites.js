@@ -1,8 +1,40 @@
+:root 
+{
+    color-scheme: dark;
+}
 
+button
+{
+    background-color: #333333;
+    border: 1px;
+    color: white;
+    text-align: center;
+}
+
+input
+{
+    background-color: #333333;
+    color: white;
+}
+
+select
+{
+    background-color: #333333;
+    color: white;
+}
+
+button:hover {
+    background-color: #555555;
+}
 
 tr:hover 
 {
-    background:#cccccc
+    background:#555555;
+}
+
+tr {
+    background-color: #333333;
+    color : white;
 }
 
 td {
@@ -11,10 +43,22 @@ td {
 
 label {
     user-select: none;
+    color: white;
 }
 
 legend {
     user-select: none;
+    color: white;
+}
+
+fieldset {
+    background-color: #222222;
+    border-color: #aaaaaa;
+}
+
+textarea {
+    background-color: #333333;
+    color : white;
 }
 
 #datasetDialogContainer
@@ -22,8 +66,8 @@ legend {
     position : absolute;
     top: 100px;
     left: 100px;
-    width : 665px;
-    height : 380px;
+    width : 695px;
+    height : 410px;
 }
 
 #datasetFieldset
@@ -110,8 +154,8 @@ legend {
 #datasetCount
 {
     position: absolute;
-    left : 10px;
-    bottom : 0px;
+    left : 20px;
+    bottom:  0px;
 }
 
 #datasetTextFieldset

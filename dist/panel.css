@@ -2,6 +2,10 @@
 {
     width: 80px;
     height: 600px;
+    z-index: 10;
+    position: absolute;
+    left: 0;
+    top: 0;
 }
 
 body 
@@ -23,7 +27,4 @@ body
 p
 {
     color: white;
-    position: absolute;
-    top: 100px;
-    left: 100px;
 }

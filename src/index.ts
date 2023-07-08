@@ -10,6 +10,7 @@ import { IVisibility} from "./IVisibility";
 import { Panel } from "./Panel";
 import { PanelView } from "./PanelView";
 import { HelpView } from "./HelpView";
+import { View2d } from "./View2d";
 
 export {TargetCollection};
 export {TargetView};
@@ -23,3 +24,4 @@ export {IVisibility}
 export {Panel};
 export {PanelView}
 export {HelpView};
+export {View2d};

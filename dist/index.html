@@ -1,0 +1,136 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="dataset.css">
+        <link rel="stylesheet" href="panel.css">
+        <link rel="stylesheet" href="view2d.css">
+    </head>
+    <body>
+        <script src="./satellites.js"></script>
+
+        <div id="datasetDialogContainer">
+            <fieldset class="tables" id="datasetFieldset">
+                <legend>Dataset Configuration</legend>
+                <fieldset class="tables" id="fleetFieldset">
+                    <legend>Fleet Selection</legend>
+
+
+                    <label for="fleetSelect" id="fleetSelectLabel">Fleet:</label>
+                    <select name="Fleet" id="fleetSelect">
+                        <option value="default">default</option>
+                    </select>
+                    <button type="button" id="fleetAddButton">Add</button>
+                    <button type="button" id="fleetRemoveButton">Remove</button>
+                </fieldset>
+
+                <fieldset class="tables" id="datasetTableFieldset">
+                    <legend>Targets</legend>
+                    <input type="text" id="datasetTargetsFilter"  placeholder="Filter" title="Type in a name">
+                    <div id="datasetTargetsDeleteContainer">
+                        <label for="datasetTargetsDelete">Delete</label>
+                        <input type="checkbox" id="datasetTargetsDelete"></input>
+                    </div>
+
+                    <button id="datasetTargetsClear">Clear</button>
+    
+                    <div id="datasetTableContainer">
+                        <table id="datasetTable"></table>
+                    </div>
+                </fieldset>
+                <fieldset class="tables" id="datasetTextFieldset">
+                    <legend>Target JSON</legend>
+                    <div id="datasetTextContainer">
+                        <textarea id="datasetText" rows="10" cols="40" readonly></textarea>
+                    </div>
+                </fieldset>
+                <fieldset class="tables" id="datasetAddFieldset">
+                    <legend>Add Data</legend>
+                    <div id="datasetAddContainer">
+                        <button type="button" id="datasetAddTle">TLEs</button>
+                        <button type="button" id="datasetAddOsv">OSVs</button>
+                        <button type="button" id="datasetAddKepler">Kepler</button>
+                        <button type="button" id="datasetImportJson">JSON</button>
+                    </div>
+                </fieldset>
+
+                <button id="datasetCloseButton">Close</button>
+                <p id="datasetCount">LOADING</p>
+            </fieldset>
+        </div>
+
+        <div id="TLEListcontainer">
+            <fieldset class="tables" id="TLElistfieldset">
+                <legend>Add TLEs</legend>
+
+                <label for="TLEListinput">Paste a list of 3-line TLEs below:</label><br>
+                <a href="https://celestrak.com/NORAD/elements/" target="_blank"> See CelesTrak for available TLEs.</a>
+                <textarea id="TLEListinput" rows="10" cols="69"></textarea>
+                <button id="TLEListEnter">Enter</button>
+                <button id="TLEListCancel">Cancel</button>
+            </fieldset>
+        </div>
+
+        <div id="view2d" style="visibility:hidden">
+            <canvas id="view2dCanvasGl"></canvas>
+            <canvas id="view2dCanvas2d"></canvas>
+        </div>
+
+        <div id="helpDialog" style="visibility:hidden">
+            <p>HELP_DIALOG</p>
+        </div>
+        <div id="panel">
+        </div>
+
+
+        
+        <script>
+            const dataset = new satellites.Dataset("OBJECT_ID");
+            dataset.addFleet("default");
+            const datasetView = new satellites.DatasetView(dataset);
+            datasetView.setElements("datasetDialogContainer",
+                                    "datasetCloseButton",
+                                    "fleetSelect",
+                                    "fleetAddButton",
+                                    "fleetRemoveButton",
+                                    "datasetCount",
+                                    "datasetAddTle",
+                                    "datasetAddOsv",
+                                    "datasetAddKepler",
+                                    "datasetImportJson",
+                                    "datasetTargetsFilter",
+                                    "datasetTargetsDelete",
+                                    "datasetTargetsClear",
+                                    "datasetTable",
+                                    "datasetText");
+            datasetView.setTleElements("TLEListcontainer",
+                                       "TLEListinput",
+                                       "TLEListEnter",
+                                       "TLEListCancel");
+
+            const dialog = document.getElementById("datasetDialogContainer");
+            dialog.addEventListener("closeDialog", function() {
+                console.log("Received closeDialog");
+            });
+            dialog.addEventListener("updateDataset", function() {
+                console.log("Received updateDataset");
+            });
+
+            const helpView = new satellites.HelpView();
+            helpView.setElement("helpDialog");
+
+            const view2d = new satellites.View2d();
+            view2d.setElements("view2d", "view2dCanvas2d", "view2dCanvasGl");
+            view2d.loadMapJson("../data/worldmap.json");
+
+            const panel = new satellites.Panel();
+            panel.addElement("dataset", datasetView,    "../images/dataset_dark.png", "../images/dataset_light.png");
+            panel.addElement("geo2d",   view2d,   "../images/2d_dark.png", "../images/2d_light.png");
+            //panel.addElement("geo3d",   geo3dView,   "../images/3d_dark.png", "../images/3d_light.png");
+            //panel.addElement("horizon", horizonView, "../images/horizon_dark.png", "../images/horizon_light.png");
+            //panel.addElement("conf",    confView,    "../images/configuration_dark.png", "../images/configuration_light.png");
+            panel.addElement("help",    helpView,    "../images/help_dark.png", "../images/help_light.png");
+            const panelView = new satellites.PanelView(panel, "panel", 75);
+            panelView.create();
+
+        </script>
+    </body>
+</html>
