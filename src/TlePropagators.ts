@@ -1,5 +1,5 @@
 import {Tle} from "./Tle";
-import {MathUtils} from "./MathUtils";
+import {MathUtils} from "./computation/MathUtils";
 
 /*const sgp4Constants = {
     mu : 398600.5,               // km^3/s^2

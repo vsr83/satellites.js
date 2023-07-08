@@ -2,8 +2,8 @@ import {TargetInfoField, TargetInfo, TargetInfoCollection, TargetCollection} fro
 import {TargetView} from "./TargetView";
 import {Tle} from "./Tle";
 import {Sgp4Propagation} from "./TlePropagators";
-import {JulianTime, GregorianTime} from "./JulianTime";
-import {MathUtils} from "./MathUtils";
+import {JulianTime, GregorianTime} from "./computation/JulianTime";
+import {MathUtils} from "./computation/MathUtils";
 import { Dataset } from "./Dataset";
 import { DatasetView } from "./DatasetView";
 import { IVisibility} from "./IVisibility";
@@ -11,6 +11,14 @@ import { Panel } from "./Panel";
 import { PanelView } from "./PanelView";
 import { HelpView } from "./HelpView";
 import { View2d } from "./View2d";
+import { Angles } from "./computation/Angles";
+import { Frames } from "./computation/Frames";
+import { Nutation } from "./computation/Nutation";
+import { Rotations } from "./computation/Rotations";
+import { SiderealTime } from "./computation/SiderealTime";
+import { TimeCorrelation } from "./computation/TimeCorrelation";
+import { Vsop87A } from "./computation/Vsop87A";
+import { Wgs84 } from "./computation/Wgs84";
 
 export {TargetCollection};
 export {TargetView};
@@ -25,3 +33,11 @@ export {Panel};
 export {PanelView}
 export {HelpView};
 export {View2d};
+export {Angles};
+export {Frames};
+export {Nutation};
+export {Rotations};
+export {SiderealTime};
+export {TimeCorrelation};
+export {Vsop87A};
+export {Wgs84};

@@ -1,4 +1,4 @@
-import {GregorianTime, JulianTime} from "./JulianTime";
+import {GregorianTime, JulianTime} from "./computation/JulianTime";
 import { TargetInfo } from "./Target";
 
 enum TleFieldType {
