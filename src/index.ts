@@ -19,6 +19,8 @@ import { SiderealTime } from "./computation/SiderealTime";
 import { TimeCorrelation } from "./computation/TimeCorrelation";
 import { Vsop87A } from "./computation/Vsop87A";
 import { Wgs84 } from "./computation/Wgs84";
+import { Time } from "./computation/Time";
+import { TimeView } from "./TimeView";
 
 export {TargetCollection};
 export {TargetView};
@@ -41,3 +43,5 @@ export {SiderealTime};
 export {TimeCorrelation};
 export {Vsop87A};
 export {Wgs84};
+export {Time};
+export {TimeView}

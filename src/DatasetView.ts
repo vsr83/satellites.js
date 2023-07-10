@@ -2,6 +2,7 @@ import { TargetCollection, TargetInfo, TargetInfoCollection, TargetInfoField } f
 import { Dataset } from "./Dataset";
 import { Tle } from "./Tle";
 import { IVisibility } from "./IVisibility";
+
 /**
  * Class implementing the internals of the dataset dialog.
  */

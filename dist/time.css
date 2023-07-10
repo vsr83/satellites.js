@@ -1,0 +1,82 @@
+#timeDialog
+{
+    position: absolute;
+    bottom: 10px;
+    left : 10px;
+    width : 350px;
+    height : 80px;
+    padding : 0px;
+    border: 0px;
+    background-color: #222222;
+    z-index : 11;
+}
+
+#timeLabel
+{
+    position: absolute;
+    text-align : center;
+    font-family: monospace;
+    font-weight: bold;
+    font-size : 20px;
+    padding : 0px;
+    border: 0px;
+    width : 350px;
+    top : 0px;
+}
+
+.timeButtons
+{
+    position: absolute;
+    width: 27px;
+    height: 27px;
+    bottom: 2px;
+    white-space: nowrap;
+}
+
+#timeMinusDay
+{
+    left: 2px;
+}
+#timeMinusHour
+{
+    left: 30px;
+}
+#timeMinusMinute
+{
+    left: 58px;
+}
+#timeMinusSecond
+{
+    left: 86px;
+}
+#timePlusDay
+{
+    right: 2px;
+}
+#timePlusHour
+{
+    right: 30px;
+}
+#timePlusMinute
+{
+    right: 58px;
+}
+#timePlusSecond
+{
+    right: 86px;
+}
+#timePause
+{
+    right: 114px;
+    width: 40px;
+}
+#timeSet
+{
+    right: 155px;
+    width: 40px;
+}
+#timeReset
+{
+    right: 196px;
+    width: 40px;
+}

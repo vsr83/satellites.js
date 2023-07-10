@@ -3,6 +3,7 @@
         <link rel="stylesheet" href="dataset.css">
         <link rel="stylesheet" href="panel.css">
         <link rel="stylesheet" href="view2d.css">
+        <link rel="stylesheet" href="time.css">
     </head>
     <body>
         <script src="./satellites.js"></script>
@@ -77,6 +78,22 @@
         <div id="helpDialog" style="visibility:hidden">
             <p>HELP_DIALOG</p>
         </div>
+
+        <div id="timeDialog">
+            <p id="timeLabel">2023-07-10 01:11:17 (UTC)</p>
+            <button class="timeButtons" id="timeMinusDay">-d</button>
+            <button class="timeButtons" id="timeMinusHour">-h</button>
+            <button class="timeButtons" id="timeMinusMinute">-m</button>
+            <button class="timeButtons" id="timeMinusSecond">-s</button>
+            <button class="timeButtons" id="timePlusDay">+d</button>
+            <button class="timeButtons" id="timePlusHour">+h</button>
+            <button class="timeButtons" id="timePlusMinute">+m</button>
+            <button class="timeButtons" id="timePlusSecond">+s</button>
+            <button class="timeButtons" id="timePause">Pause</button>
+            <button class="timeButtons" id="timeSet">Set</button>
+            <button class="timeButtons" id="timeReset">Reset</button>
+        </div>
+
         <div id="panel">
         </div>
 
