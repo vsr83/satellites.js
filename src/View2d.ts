@@ -5,12 +5,15 @@ import { TimeCorrelation, TimeStamp, TimeConvention } from "./computation/TimeCo
 import { Vsop87A } from "./computation/Vsop87A";
 import { Frame, Frames, OsvFrame} from "./computation/Frames";
 import { Nutation, NutationData } from "./computation/Nutation";
+import { TimeView } from "./TimeView";
 
 /**
  * Class implementing the 2d view.
  */
 export class View2d implements IVisibility
 {
+    private timeView : TimeView;
+
     // HTML element for 2d canvas.
     private canvas2d : HTMLCanvasElement;
     // HTML element for the WebGL2 canvas.
@@ -280,10 +283,14 @@ export class View2d implements IVisibility
 
     /**
      * Public constructor.
+     * 
+     * @param {TimeView} timeView
+     *      Time view.
      */
-    constructor()
+    constructor(timeView : TimeView)
     {
         this.timeCorr = new TimeCorrelation();
+        this.timeView = timeView;
     }
 
     /**
@@ -499,6 +506,8 @@ export class View2d implements IVisibility
 
     draw()
     {
+        const JT = this.timeView.update();
+
         if (this.numTextures < 2)
         {
             if (this.isVisible())
@@ -508,7 +517,6 @@ export class View2d implements IVisibility
         }
 
         const dateNow = new Date();
-        const JT = JulianTime.timeJulianTs(new Date(dateNow.getTime()));
         const timeStamp : TimeStamp = this.timeCorr.computeTimeStamp(JT, TimeConvention.TIME_UTC, true);
         const nutData : NutationData = Nutation.iau1980(timeStamp);
 

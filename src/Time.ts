@@ -1,4 +1,4 @@
-import { JulianTime } from "./JulianTime";
+import { JulianTime } from "./computation/JulianTime";
 
 export class Time
 {
@@ -82,6 +82,27 @@ export class Time
         this.JTstart = JTin;
         this.JTprev = JTin;
         this.JTdelta = 0.0;
+    }
+
+    /**
+     * Set pause.
+     * 
+     * @param {boolean} pause 
+     *      Whether pause is enabled.
+     */
+    setPause(pause : boolean)
+    {
+        this.pause = pause;
+    }
+
+    /**
+     * Check whether pause is enabled.
+     * 
+     * @return {boolean} Whether pause is enabled.
+     */
+    isPaused() : boolean
+    {
+        return this.pause;
     }
 
     /**

@@ -41,11 +41,11 @@
 {
     left: 30px;
 }
-#timeMinusMinute
+#timeMinusMin
 {
     left: 58px;
 }
-#timeMinusSecond
+#timeMinusSec
 {
     left: 86px;
 }
@@ -57,11 +57,11 @@
 {
     right: 30px;
 }
-#timePlusMinute
+#timePlusMin
 {
     right: 58px;
 }
-#timePlusSecond
+#timePlusSec
 {
     right: 86px;
 }

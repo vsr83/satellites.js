@@ -19,7 +19,7 @@ import { SiderealTime } from "./computation/SiderealTime";
 import { TimeCorrelation } from "./computation/TimeCorrelation";
 import { Vsop87A } from "./computation/Vsop87A";
 import { Wgs84 } from "./computation/Wgs84";
-import { Time } from "./computation/Time";
+import { Time } from "./Time";
 import { TimeView } from "./TimeView";
 
 export {TargetCollection};
