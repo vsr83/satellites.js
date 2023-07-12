@@ -1,14 +1,15 @@
-import { IVisibility } from "./IVisibility";
-import { MathUtils } from "./computation/MathUtils";
-import { JulianTime } from "./computation/JulianTime";
-import { TimeCorrelation, TimeStamp, TimeConvention } from "./computation/TimeCorrelation";
-import { Vsop87A } from "./computation/Vsop87A";
-import { Frame, Frames, OsvFrame} from "./computation/Frames";
-import { Nutation, NutationData } from "./computation/Nutation";
-import { TimeView } from "./TimeView";
-import { Dataset } from "./Dataset";
-import { PropagatedOsvData, Propagation } from "./Propagation";
-import { EarthPosition, Wgs84 } from "./computation/Wgs84";
+import { IVisibility } from "../IVisibility";
+import { MathUtils } from "../computation/MathUtils";
+import { JulianTime } from "../computation/JulianTime";
+import { TimeCorrelation, TimeStamp, TimeConvention } from "../computation/TimeCorrelation";
+import { Vsop87A } from "../computation/Vsop87A";
+import { Frame, Frames, OsvFrame} from "../computation/Frames";
+import { Nutation, NutationData } from "../computation/Nutation";
+import { TimeView } from "../TimeView";
+import { Dataset } from "../Dataset";
+import { PropagatedOsvData, Propagation } from "../Propagation";
+import { EarthPosition, Wgs84 } from "../computation/Wgs84";
+import { PlanetShader2d } from "./PlanetShader2d";
 
 /**
  * Class implementing the 2d view.
@@ -28,7 +29,9 @@ export class View2d implements IVisibility
 
     private timeCorr : TimeCorrelation;
 
-    private static vertShaderPlanet : string = `#version 300 es
+    planetShader : PlanetShader2d;
+
+    /*private static vertShaderPlanet : string = `#version 300 es
     // an attribute is an input (in) to a vertex shader.
     // It will receive data from a buffer
     in vec2 a_position;
@@ -217,7 +220,7 @@ export class View2d implements IVisibility
         }
     }
     `;
-
+*/
     private static vertShaderLine : string = `#version 300 es
     // an attribute is an input (in) to a vertex shader.
     // It will receive data from a buffer
@@ -264,7 +267,7 @@ export class View2d implements IVisibility
     // WebGL2 rendering context.
     contextGl : WebGL2RenderingContext;
     // WebGL program.
-    programPlanet : WebGLProgram;
+    //programPlanet : WebGLProgram;
     // WebGL program.
     programMap : WebGLProgram;
 
@@ -272,15 +275,15 @@ export class View2d implements IVisibility
     colorBufferMap : WebGLBuffer;
     numLinesMap : number;
 
-    posAttrLocation : number;
-    texAttrLocation : number;
+    //posAttrLocation : number;
+    //texAttrLocation : number;
     colorAttrLocationMap : number;
     posAttrLocationMap : number;
 
-    matrixLocation : WebGLUniformLocation;
-    vertexArrayPlanet : WebGLVertexArrayObject;
+    //matrixLocation : WebGLUniformLocation;
+    //vertexArrayPlanet : WebGLVertexArrayObject;
     vertexArrayMap : WebGLVertexArrayObject;
-    numTextures : number;
+    //numTextures : number;
 
     // Earth map polygons.
     private mapPolygons : number[][][];
@@ -300,6 +303,7 @@ export class View2d implements IVisibility
         this.timeView = timeView;
         this.dataset = dataset;
         this.propagation = propagation;
+        this.planetShader = new PlanetShader2d();
     }
 
     /**
@@ -412,18 +416,19 @@ export class View2d implements IVisibility
     init(pathTextureDay : string, pathTextureNight : string) : void
     {
         const gl = this.contextGl;
-        this.programPlanet = this.compileProgram(View2d.vertShaderPlanet, View2d.fragShaderPlanet);
+        //this.programPlanet = this.compileProgram(View2d.vertShaderPlanet, View2d.fragShaderPlanet);
         this.programMap = this.compileProgram(View2d.vertShaderLine, View2d.fragShaderLine);
 
         // Get attribute and uniform locations.
-        this.posAttrLocation = gl.getAttribLocation(this.programPlanet, "a_position");
-        this.texAttrLocation = gl.getAttribLocation(this.programPlanet, "a_texcoord");
-        this.matrixLocation = <WebGLUniformLocation> gl.getUniformLocation(this.programPlanet, "u_matrix");
+        //this.posAttrLocation = gl.getAttribLocation(this.programPlanet, "a_position");
+        //this.texAttrLocation = gl.getAttribLocation(this.programPlanet, "a_texcoord");
+        //this.matrixLocation = <WebGLUniformLocation> gl.getUniformLocation(this.programPlanet, "u_matrix");
+        this.planetShader.init(this.contextGl, pathTextureDay, pathTextureNight);
 
         this.posAttrLocationMap = gl.getAttribLocation(this.programMap, "a_position");
         this.colorAttrLocationMap = gl.getAttribLocation(this.programMap, "a_color");
 
-        this.vertexArrayPlanet = <WebGLVertexArrayObject> gl.createVertexArray();
+        /*this.vertexArrayPlanet = <WebGLVertexArrayObject> gl.createVertexArray();
         gl.bindVertexArray(this.vertexArrayPlanet);
         let positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -437,8 +442,10 @@ export class View2d implements IVisibility
         ]), gl.STATIC_DRAW);
         gl.enableVertexAttribArray(this.posAttrLocation);
         gl.vertexAttribPointer(this.posAttrLocation, 2, gl.FLOAT, false, 0, 0);
+        */
 
        // Load Texture and vertex coordinate buffers. 
+       /*
         var texCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
@@ -451,7 +458,8 @@ export class View2d implements IVisibility
         ]), gl.STATIC_DRAW);
         gl.enableVertexAttribArray(this.texAttrLocation);
         gl.vertexAttribPointer(this.texAttrLocation, 2, gl.FLOAT, false, 0, 0);
-    
+        */
+        
         // Initialize buffer for map coordinates.
         this.vertexArrayMap = <WebGLVertexArrayObject> gl.createVertexArray();
         gl.bindVertexArray(this.vertexArrayMap);
@@ -468,7 +476,7 @@ export class View2d implements IVisibility
 
         
         // Load textures:
-        const imageDay = new Image();
+        /*const imageDay = new Image();
         imageDay.src = pathTextureDay;
         const imageLocationDay = <WebGLUniformLocation> gl.getUniformLocation(this.programPlanet, "u_imageDay");
         
@@ -483,34 +491,7 @@ export class View2d implements IVisibility
         });
         imageNight.addEventListener('load', function() {
             instance.loadTexture(1, imageNight, imageLocationNight);
-        });
-    }
-
-    /**
-     * Load texture.
-     * 
-     * @param {Number} index 
-     * @param {Image} image The image to be loaded.
-     * @param {WebGLUniformLocation} imageLocation Uniform location for the texture.
-     */
-    loadTexture(index : number, image : any, imageLocation : WebGLUniformLocation)
-    {
-        // Create a texture.
-        const gl = this.contextGl;
-        gl.useProgram(this.programPlanet);
-
-        const texture = gl.createTexture();
-
-        gl.activeTexture(gl.TEXTURE0 + index);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        gl.uniform1i(imageLocation, index);
+        });*/
     }
 
     draw()
@@ -537,12 +518,16 @@ export class View2d implements IVisibility
 
         const JT = this.timeView.update();
 
-        if (this.numTextures < 2)
+        /*if (this.numTextures < 2)
         {
             if (this.isVisible())
             {
                 requestAnimationFrame(this.draw.bind(this));
             }
+        }*/
+        if (this.isVisible())
+        {
+            requestAnimationFrame(this.draw.bind(this));
         }
 
         const dateNow = new Date();
@@ -563,7 +548,7 @@ export class View2d implements IVisibility
         //console.log(osvEfi);
 
         const gl = this.contextGl;
-        gl.useProgram(this.programPlanet);
+        //gl.useProgram(this.programPlanet);
 
         this.canvasGl.width = window.innerWidth; //document.documentElement.clientWidth;
         this.canvasGl.height = window.innerHeight;// document.documentElement.clientHeight;
@@ -571,7 +556,7 @@ export class View2d implements IVisibility
         this.canvas2d.height = window.innerHeight;//document.documentElement.clientHeight;
         console.log(this.canvasGl.width + " " + this.canvasGl.height);
         
-        const moonXLocation = gl.getUniformLocation(this.programPlanet, "u_moon_x");
+        /*const moonXLocation = gl.getUniformLocation(this.programPlanet, "u_moon_x");
         const moonYLocation = gl.getUniformLocation(this.programPlanet, "u_moon_y");
         const moonZLocation = gl.getUniformLocation(this.programPlanet, "u_moon_z");
         const sunXLocation = gl.getUniformLocation(this.programPlanet, "u_sun_x");
@@ -594,8 +579,9 @@ export class View2d implements IVisibility
 
         var resolutionLocation = gl.getUniformLocation(this.programPlanet, "u_resolution");
         gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
+        */
     
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        /*gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.bindVertexArray(this.vertexArrayPlanet);
@@ -604,6 +590,9 @@ export class View2d implements IVisibility
         gl.useProgram(this.programMap);
         gl.bindVertexArray(this.vertexArrayMap);
         gl.drawArrays(gl.LINES, 0, this.numLinesMap * 2);
+        */
+
+        this.planetShader.draw(osvEfi);
 
         const targetNames : string[] = Object.keys(propData);
         for (let indTarget = 0; indTarget < targetNames.length; indTarget++)
