@@ -134,6 +134,16 @@ export class Dataset
     }
 
     /**
+     * Get list of fleet names.
+     * 
+     * @returns {string[]} The list.
+     */
+    getFleetNames() : string[]
+    {
+        return Object.keys(this.fleetCollection);
+    }
+
+    /**
      * Remove target from all fleets.
      * 
      * @param {string} target 

@@ -96,10 +96,9 @@
 
         <div id="panel">
         </div>
-
-
         
         <script>
+            const timeCorrelation = new satellites.TimeCorrelation();
             const time = new satellites.Time();
             time.reset();
             const timeView = new satellites.TimeView(time);
@@ -118,7 +117,11 @@
 
             const dataset = new satellites.Dataset("OBJECT_ID");
             dataset.addFleet("default");
+            const propagation = new satellites.Propagation(dataset, timeCorrelation);
+            propagation.init();
+
             const datasetView = new satellites.DatasetView(dataset);
+            
             datasetView.setElements("datasetDialogContainer",
                                     "datasetCloseButton",
                                     "fleetSelect",
@@ -145,12 +148,13 @@
             });
             dialog.addEventListener("updateDataset", function() {
                 console.log("Received updateDataset");
+                propagation.init();
             });
 
             const helpView = new satellites.HelpView();
             helpView.setElement("helpDialog");
 
-            const view2d = new satellites.View2d(timeView);
+            const view2d = new satellites.View2d(dataset, propagation, timeView);
             view2d.setElements("view2d", "view2dCanvas2d", "view2dCanvasGl");
             view2d.loadMapJson("../data/worldmap.json");
             view2d.init("../images/8k_earth_daymap.jpg", "../images/8k_earth_nightmap.jpg");

@@ -1,5 +1,7 @@
 import {Tle} from "./Tle";
+import { OsvFrame, Frame } from "./computation/Frames";
 import {MathUtils} from "./computation/MathUtils";
+import { TimeCorrelation, TimeStamp, TimeConvention } from "./computation/TimeCorrelation";
 
 /*const sgp4Constants = {
     mu : 398600.5,               // km^3/s^2
@@ -63,6 +65,9 @@ export interface BrouwerElements
 export class Sgp4Propagation
 {
     tle : Tle;
+
+    timeCorrelation : TimeCorrelation;
+
     // The constant used for 
     s : number; 
 
@@ -77,9 +82,10 @@ export class Sgp4Propagation
 
     gmstEpoch : number;
 
-    constructor(tle : Tle)
+    constructor(tle : Tle, timeCorrelation : TimeCorrelation)
     {
         this.tle = tle;
+        this.timeCorrelation = timeCorrelation;
     }
 
     /**
@@ -497,7 +503,7 @@ export class Sgp4Propagation
         return eo1;
     }
 
-    compute(tSince : number)
+    compute(tSince : number) : OsvFrame
     {
         const twopi = 2.0 * Math.PI;
 
@@ -534,6 +540,7 @@ export class Sgp4Propagation
             //satrec->error = 4;
             // sgp4fix add return
             //return FALSE;
+            throw Error("pl < 0");
         }
         else
         {
@@ -569,8 +576,20 @@ export class Sgp4Propagation
                 1.5 * con41) / sgp4Constants.xke;
 
             const {r, v} = this.computeOsv(su, xnode, xinc, mrt, mvt, rvdot);
-            console.log("r " + r);
-            console.log("v " + v);
+            //console.log("r " + r);
+            //console.log("v " + v);
+            //return {r : r, v : v};
+
+            const JTut1 = this.tle.jtUt1Epoch + tSince / 1440.0;
+            const timeStamp : TimeStamp = this.timeCorrelation.computeTimeStamp(JTut1, TimeConvention.TIME_UT1, false);
+            const osv : OsvFrame = {
+                frame : Frame.FRAME_J2000,
+                timeStamp : timeStamp,
+                position : MathUtils.vecMul(r, 1000.0),
+                velocity : MathUtils.vecMul(v, 1000.0)
+            };
+
+            return osv;            
         }  // if pl > 0        
     }
 

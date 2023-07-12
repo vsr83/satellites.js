@@ -6,6 +6,9 @@ import { Vsop87A } from "./computation/Vsop87A";
 import { Frame, Frames, OsvFrame} from "./computation/Frames";
 import { Nutation, NutationData } from "./computation/Nutation";
 import { TimeView } from "./TimeView";
+import { Dataset } from "./Dataset";
+import { PropagatedOsvData, Propagation } from "./Propagation";
+import { EarthPosition, Wgs84 } from "./computation/Wgs84";
 
 /**
  * Class implementing the 2d view.
@@ -13,6 +16,8 @@ import { TimeView } from "./TimeView";
 export class View2d implements IVisibility
 {
     private timeView : TimeView;
+    private dataset : Dataset;
+    private propagation : Propagation;
 
     // HTML element for 2d canvas.
     private canvas2d : HTMLCanvasElement;
@@ -287,10 +292,14 @@ export class View2d implements IVisibility
      * @param {TimeView} timeView
      *      Time view.
      */
-    constructor(timeView : TimeView)
+    constructor(dataset : Dataset, 
+        propagation : Propagation, 
+        timeView : TimeView)
     {
         this.timeCorr = new TimeCorrelation();
         this.timeView = timeView;
+        this.dataset = dataset;
+        this.propagation = propagation;
     }
 
     /**
@@ -506,6 +515,26 @@ export class View2d implements IVisibility
 
     draw()
     {
+        function lonToX(lon : number, canvasJs : HTMLCanvasElement) : number
+        {
+            return canvasJs.width * ((lon + 180.0) / 360.0);
+        }
+        
+        function latToY(lat : number, canvasJs : HTMLCanvasElement) : number
+        {
+            return canvasJs.height * ((-lat + 90.0) / 180.0);
+        }
+        
+        function xToLon(x : number, canvasJs  : HTMLCanvasElement) : number
+        {
+            return (360.0 * (x - canvasJs.width / 2)) / canvasJs.width;
+        }
+        
+        function yToLat(y : number, canvasJs : HTMLCanvasElement) : number
+        {
+            return -(180.0 * (y - canvasJs.height / 2)) / canvasJs.height;
+        }
+
         const JT = this.timeView.update();
 
         if (this.numTextures < 2)
@@ -530,6 +559,7 @@ export class View2d implements IVisibility
         const osvPef = Frames.coordTodPef(osvToD, nutData);
         const osvEfi = Frames.coordPefEfi(osvPef);
 
+        const propData : PropagatedOsvData = this.propagation.propagateAll(JT);
         //console.log(osvEfi);
 
         const gl = this.contextGl;
@@ -574,6 +604,35 @@ export class View2d implements IVisibility
         gl.useProgram(this.programMap);
         gl.bindVertexArray(this.vertexArrayMap);
         gl.drawArrays(gl.LINES, 0, this.numLinesMap * 2);
+
+        const targetNames : string[] = Object.keys(propData);
+        for (let indTarget = 0; indTarget < targetNames.length; indTarget++)
+        {
+            const targetName : string = targetNames[indTarget];
+
+            const osvEfi : OsvFrame = propData[targetName];
+            const pos : EarthPosition = Wgs84.coordEfiWgs84(osvEfi.position, 10, 1e-10, false);
+
+            // Draw Sun location.
+            const x = lonToX(pos.lon, this.canvas2d);
+            const y = latToY(pos.lat, this.canvas2d);
+            this.context2d.beginPath();
+            this.context2d.arc(x, y, 2, 0, Math.PI * 2);
+            this.context2d.fillStyle = "#ffff00";
+            this.context2d.fill();
+
+            this.context2d.fillStyle = "rgba(255, 255, 255)";
+
+            this.context2d.textAlign = "center";
+            this.context2d.textBaseline = "bottom";
+            this.context2d.textAlign = "right";
+            this.context2d.strokeStyle = this.context2d.fillStyle;
+
+            const caption : string = targetName;
+
+            this.context2d.fillText(caption, x, y); 
+
+        }
     }
 
     loadMapPolygons()

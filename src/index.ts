@@ -21,6 +21,7 @@ import { Vsop87A } from "./computation/Vsop87A";
 import { Wgs84 } from "./computation/Wgs84";
 import { Time } from "./Time";
 import { TimeView } from "./TimeView";
+import { Propagation } from "./Propagation";
 
 export {TargetCollection};
 export {TargetView};
@@ -44,4 +45,5 @@ export {TimeCorrelation};
 export {Vsop87A};
 export {Wgs84};
 export {Time};
-export {TimeView}
+export {TimeView};
+export {Propagation};
