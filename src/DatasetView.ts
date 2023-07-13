@@ -26,6 +26,7 @@ export class DatasetView implements IVisibility
     // Targets fieldset elements.
     private elementTargetsFilter       : HTMLInputElement;
     private elementTargetsDeleteButton : HTMLElement;
+    private elementTargetsFilterButton : HTMLElement;
     private elementTargetsClearButton  : HTMLElement;
     //private elementTargetsMoveButton   : HTMLElement;
     //private elementTargetsEditButton   : HTMLElement;
@@ -183,6 +184,7 @@ export class DatasetView implements IVisibility
         elementAddDataKeplerButton : string,
         elementAddDataJsonButton   : string,
         elementTargetsFilter       : string,
+        elementTargetsFilterButton : string,
         elementTargetsDeleteButton : string,
         elementTargetsClearButton  : string,
         elementTargetsListTable    : string,
@@ -213,6 +215,7 @@ export class DatasetView implements IVisibility
             this.elementAddDataKeplerButton = getElement(elementAddDataKeplerButton);
             this.elementAddDataJsonButton = getElement(elementAddDataJsonButton);
             this.elementTargetsFilter = <HTMLInputElement> getElement(elementTargetsFilter);
+            this.elementTargetsFilterButton = getElement(elementTargetsFilterButton);
             this.elementTargetsDeleteButton = getElement(elementTargetsDeleteButton);
             this.elementTargetsClearButton = getElement(elementTargetsClearButton);
             //this.elementTargetsMoveButton = getElement(elementTargetsMoveButton);
@@ -235,9 +238,11 @@ export class DatasetView implements IVisibility
         this.elementAddDataKeplerButton.addEventListener("click", this.addDataKepler.bind(this));
 
         this.elementTargetsDeleteButton.addEventListener("click", this.targetsDelete.bind(this));
+        this.elementTargetsFilterButton.addEventListener("click", this.targetsFilter.bind(this));
         this.elementTargetsClearButton.addEventListener("click", this.fleetClear.bind(this));
         //this.elementTargetsMoveButton.addEventListener("click", this.targetsMove.bind(this));
         //this.elementTargetsEditButton.addEventListener("click", this.targetsEdit.bind(this));
+
         this.elementTargetsFilter.addEventListener("keyup", this.textOnKeyUp.bind(this));
 
         this.eventCloseDialog = new Event("closeDialog", {});
@@ -283,6 +288,35 @@ export class DatasetView implements IVisibility
 
         const targetStr : string = JSON.stringify(this.dataset.getFleet(fleet).getTarget(target)).replace(/\,/gi, ",&#10;");
         this.elementDatasetText.innerHTML = targetStr;
+    }
+
+    /**
+     * Select filtered targets from the selected dataset.
+     */
+    targetsFilter()
+    {
+        const filterText = this.elementTargetsFilter.value.toUpperCase();
+
+        const rowElements : HTMLCollection = this.elementTargetsListBody.getElementsByTagName("tr");
+        const targets : TargetCollection = this.dataset.getFleet(this.currentFleet);
+
+        for (let rowIndex = 0; rowIndex < rowElements.length; rowIndex++) 
+        {
+            const targetName : string = rowElements[rowIndex].getElementsByTagName("td")[0].innerText;
+            const colElement : HTMLTableCellElement = rowElements[rowIndex].getElementsByTagName("td")[1];
+
+            if (colElement) 
+            {
+                const txtValue : string = colElement.textContent || colElement.innerText;
+
+                if (txtValue.toUpperCase().indexOf(filterText) > -1) 
+                {
+                } else {
+                    targets.removeTarget(targetName);
+                }
+            }       
+        }
+        this.update();
     }
 
     /**

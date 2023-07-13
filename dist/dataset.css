@@ -239,7 +239,7 @@ textarea {
     position : absolute;
     top : 5px;
     left: 10px;
-    width : 140px;
+    width : 135px;
     height : 25px;
 }
 
@@ -248,7 +248,7 @@ textarea {
 {
     position : absolute;
     top : 7px;
-    left: 160px;
+    left: 150px;
     width : 85px;
     height : 25px;
 }
@@ -273,8 +273,16 @@ textarea {
 {
     position : absolute;
     top : 5px;
-    left: 255px;
-    width : 55px;
+    left: 265px;
+    width : 45px;
+    height : 25px;
+}
+#datasetTargetsFilterButton
+{
+    position : absolute;
+    top : 5px;
+    left: 215px;
+    width : 45px;
     height : 25px;
 }
 
