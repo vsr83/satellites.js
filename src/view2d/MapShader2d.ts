@@ -1,5 +1,8 @@
 import { WebGLUtils } from "./WebGLUtils";
 
+/**
+ * Class implementing a line shader for the World map.
+ */
 export class MapShader2d
 {
     private static vertShaderLine : string = `#version 300 es

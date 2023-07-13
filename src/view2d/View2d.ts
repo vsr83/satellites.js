@@ -113,6 +113,9 @@ export class View2d implements IVisibility
         this.mapShader.init(this.contextGl, urlMapJson);
     }
 
+    /**
+     * Draw the visualization.
+     */
     draw()
     {
         function lonToX(lon : number, canvasJs : HTMLCanvasElement) : number
@@ -149,19 +152,10 @@ export class View2d implements IVisibility
             requestAnimationFrame(this.draw.bind(this));
         }
 
-        const dateNow = new Date();
         const timeStamp : TimeStamp = this.timeCorr.computeTimeStamp(JT, TimeConvention.TIME_UTC, true);
         const nutData : NutationData = Nutation.iau1980(timeStamp);
 
-        const osvHelEarth : OsvFrame = Vsop87A.planetHeliocentric("earth", timeStamp);
-        const osvEclHel : OsvFrame = {frame : Frame.FRAME_ECLHEL, timeStamp : timeStamp, 
-        position : [0, 0, 0], velocity : [0, 0, 0]};
-        const osvEclGeo = Frames.coordHelEcl(osvEclHel, osvHelEarth);
-        const osvJ2000 = Frames.coordEclEq(osvEclGeo);
-        const osvMoD = Frames.coordJ2000Mod(osvJ2000);
-        const osvToD = Frames.coordModTod(osvMoD, nutData);
-        const osvPef = Frames.coordTodPef(osvToD, nutData);
-        const osvEfi = Frames.coordPefEfi(osvPef);
+        const osvEfi = this.computeSunEfi(timeStamp, nutData);
 
         const propData : PropagatedOsvData = this.propagation.propagateAll(JT);
         //console.log(osvEfi);
@@ -207,6 +201,30 @@ export class View2d implements IVisibility
 
         }
     }
+
+    /**
+     * Compute OSV for the Sun in the EFI frame.
+     * 
+     * @param {TimeStamp} timeStamp 
+     *      Timestamp used for the computation.
+     * @param {NutationData} nutData 
+     *      Nutation data.
+     * @returns {OsvFrame} Orbit state vector.
+     */
+    computeSunEfi(timeStamp : TimeStamp, nutData : NutationData) : OsvFrame
+    {
+        const osvHelEarth : OsvFrame = Vsop87A.planetHeliocentric("earth", timeStamp);
+        const osvEclHel : OsvFrame = {frame : Frame.FRAME_ECLHEL, timeStamp : timeStamp, 
+        position : [0, 0, 0], velocity : [0, 0, 0]};
+        const osvEclGeo = Frames.coordHelEcl(osvEclHel, osvHelEarth);
+        const osvJ2000 = Frames.coordEclEq(osvEclGeo);
+        const osvMoD = Frames.coordJ2000Mod(osvJ2000);
+        const osvToD = Frames.coordModTod(osvMoD, nutData);
+        const osvPef = Frames.coordTodPef(osvToD, nutData);
+        const osvEfi = Frames.coordPefEfi(osvPef);
+
+        return osvEfi;
+    } 
 
     /**
      * Show the view.

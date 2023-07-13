@@ -156,8 +156,7 @@
 
             const view2d = new satellites.View2d(dataset, propagation, timeView);
             view2d.setElements("view2d", "view2dCanvas2d", "view2dCanvasGl");
-            view2d.loadMapJson("../data/worldmap.json");
-            view2d.init("../images/8k_earth_daymap.jpg", "../images/8k_earth_nightmap.jpg");
+            view2d.init("../images/8k_earth_daymap.jpg", "../images/8k_earth_nightmap.jpg", "../data/worldmap.json");
 
             const panel = new satellites.Panel();
             panel.addElement("dataset", datasetView,    "../images/dataset_dark.png", "../images/dataset_light.png");
