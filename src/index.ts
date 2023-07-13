@@ -23,6 +23,7 @@ import { Time } from "./Time";
 import { TimeView } from "./TimeView";
 import { Propagation } from "./Propagation";
 import { PlanetShader2d } from "./view2d/PlanetShader2d";
+import { MapShader2d } from "./view2d/MapShader2d";
 import { WebGLUtils } from "./view2d/WebGLUtils";
 
 export {TargetCollection};
@@ -51,3 +52,4 @@ export {TimeView};
 export {Propagation};
 export {WebGLUtils};
 export {PlanetShader2d};
+export {MapShader2d};
