@@ -243,6 +243,29 @@ export class Dataset
     }
 
     /**
+     * Get target by key.
+     * 
+     * @param {string} key 
+     * @returns {TargetInfo} Target info JSON.
+     */
+    getTarget(key : string) : TargetInfo | null
+    {
+        const fleetList : string[] = Object.keys(this.fleetCollection);
+
+        for (let indFleet = 0; indFleet < fleetList.length; indFleet++)
+        {
+            const fleetName : string = fleetList[indFleet];
+            const collection : TargetCollection = this.fleetCollection[fleetName];
+
+            if (collection.containsKey(key))
+            {
+                return collection.getTarget(key);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Export dataset to a JSON string.
      * 
      * @returns {string} The JSON string.

@@ -11,6 +11,7 @@ import { PropagatedOsvData, Propagation } from "../Propagation";
 import { EarthPosition, Wgs84 } from "../computation/Wgs84";
 import { PlanetShader2d } from "./PlanetShader2d";
 import { MapShader2d } from "./MapShader2d";
+import { TargetInfo } from "../Target";
 
 /**
  * Class implementing the 2d view.
@@ -167,7 +168,7 @@ export class View2d implements IVisibility
         this.canvasGl.height = window.innerHeight;// document.documentElement.clientHeight;
         this.canvas2d.width = window.innerWidth;//document.documentElement.clientWidth;
         this.canvas2d.height = window.innerHeight;//document.documentElement.clientHeight;
-        console.log(this.canvasGl.width + " " + this.canvasGl.height);
+        // console.log(this.canvasGl.width + " " + this.canvasGl.height);
 
         this.planetShader.draw(osvEfi);
         this.mapShader.draw();
@@ -176,6 +177,7 @@ export class View2d implements IVisibility
         for (let indTarget = 0; indTarget < targetNames.length; indTarget++)
         {
             const targetName : string = targetNames[indTarget];
+            const targetInfo : TargetInfo = <TargetInfo> this.dataset.getTarget(targetName);
 
             const osvEfi : OsvFrame = propData[targetName];
             const pos : EarthPosition = Wgs84.coordEfiWgs84(osvEfi.position, 10, 1e-10, false);
@@ -195,10 +197,8 @@ export class View2d implements IVisibility
             this.context2d.textAlign = "right";
             this.context2d.strokeStyle = this.context2d.fillStyle;
 
-            const caption : string = targetName;
-
+            const caption : string = (<string> targetInfo.OBJECT_NAME).trim() + " ";
             this.context2d.fillText(caption, x, y); 
-
         }
     }
 
