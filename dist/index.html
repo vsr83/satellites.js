@@ -121,7 +121,7 @@
             const propagation = new satellites.Propagation(dataset, timeCorrelation);
             propagation.init();
 
-            const datasetView = new satellites.DatasetView(dataset);
+            const datasetView = new satellites.DatasetView(dataset, timeView);
             
             datasetView.setElements("datasetDialogContainer",
                                     "datasetCloseButton",
@@ -153,7 +153,7 @@
                 propagation.init();
             });
 
-            const helpView = new satellites.HelpView();
+            const helpView = new satellites.HelpView(timeView);
             helpView.setElement("helpDialog");
 
             const view2d = new satellites.View2d(dataset, propagation, timeView);

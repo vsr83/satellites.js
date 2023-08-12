@@ -1,13 +1,16 @@
 import { TargetCollection, TargetInfo, TargetInfoCollection, TargetInfoField } from "./Target";
 import { Dataset } from "./Dataset";
-import { Tle } from "./Tle";
-import { IVisibility } from "./IVisibility";
-
+import { Tle } from "../Tle";
+import { IVisibility } from "../IVisibility";
+import { TimeView } from "../TimeView";
 /**
  * Class implementing the internals of the dataset dialog.
  */
 export class DatasetView implements IVisibility
 {
+    // Time view to be regularly updated.
+    private timeView : TimeView;
+
     private elementDialog              : HTMLElement;
     private elementCloseButton         : HTMLElement;
 
@@ -55,9 +58,16 @@ export class DatasetView implements IVisibility
     private eventUpdateDataset   : Event;
     private eventCloseDialog     : Event;
 
-    constructor(dataset : Dataset)
+    constructor(dataset : Dataset, timeView : TimeView)
     {
         this.dataset = dataset;
+        this.timeView = timeView;
+
+        setInterval(() => {
+            if(this.isVisible()) {
+                this.timeView.update();
+            }
+        }, 500);
     }
 
     setTleElements(elementTlecontainer : string, 
@@ -263,6 +273,7 @@ export class DatasetView implements IVisibility
     show()
     {
         this.elementDialog.style.visibility = "visible";
+        this.timeView.update();
     }
 
     /**

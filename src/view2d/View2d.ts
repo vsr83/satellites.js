@@ -6,12 +6,12 @@ import { Vsop87A } from "../computation/Vsop87A";
 import { Frame, Frames, OsvFrame} from "../computation/Frames";
 import { Nutation, NutationData } from "../computation/Nutation";
 import { TimeView } from "../TimeView";
-import { Dataset } from "../Dataset";
+import { Dataset } from "../viewTargets/Dataset";
 import { PropagatedOsvData, Propagation } from "../Propagation";
 import { EarthPosition, Wgs84 } from "../computation/Wgs84";
 import { PlanetShader2d } from "./PlanetShader2d";
 import { MapShader2d } from "./MapShader2d";
-import { TargetInfo } from "../Target";
+import { TargetInfo } from "../viewTargets/Target";
 
 /**
  * Class implementing the 2d view.
@@ -141,13 +141,6 @@ export class View2d implements IVisibility
 
         const JT = this.timeView.update();
 
-        /*if (this.numTextures < 2)
-        {
-            if (this.isVisible())
-            {
-                requestAnimationFrame(this.draw.bind(this));
-            }
-        }*/
         if (this.isVisible())
         {
             requestAnimationFrame(this.draw.bind(this));

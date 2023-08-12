@@ -1,5 +1,5 @@
 import { TargetCollection, TargetInfoField, TargetInfo } from "./Target";
-import { Tle } from "./Tle";
+import { Tle } from "../Tle";
 
 export type FleetCollection = {
     [key : string] : TargetCollection

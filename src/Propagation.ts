@@ -1,5 +1,5 @@
-import { Dataset } from "./Dataset";
-import { TargetCollection, TargetInfoField, TargetInfo } from "./Target";
+import { Dataset } from "./viewTargets/Dataset";
+import { TargetCollection, TargetInfoField, TargetInfo } from "./viewTargets/Target";
 import { Sgp4Propagation } from "./TlePropagators";
 import { Tle } from "./Tle";
 import { TimeConvention, TimeCorrelation, TimeStamp } from "./computation/TimeCorrelation";

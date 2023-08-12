@@ -1,4 +1,5 @@
-import { IVisibility } from "./IVisibility";
+import { IVisibility } from "../IVisibility";
+import { TimeView } from "../TimeView";
 
 /**
  * Class implementing the help dialog. Since there is no interactivity, there
@@ -6,6 +7,8 @@ import { IVisibility } from "./IVisibility";
  */
 export class HelpView implements IVisibility
 {
+    // Time view to be regularly updated.
+    private timeView : TimeView;
     // HTML element for the help dialog.
     private elementDialog : HTMLElement;
     // Flag indicating whether the dialog is visible.
@@ -14,9 +17,16 @@ export class HelpView implements IVisibility
     /**
      * Public constructor.
      */
-    constructor()
+    constructor(timeView : TimeView)
     {
         this.visible = false;
+        this.timeView = timeView;
+
+        setInterval(() => {
+            if(this.isVisible()) {
+                this.timeView.update();
+            }
+        }, 500);
     }
 
     /**
@@ -42,6 +52,7 @@ export class HelpView implements IVisibility
     {
         this.visible = true;
         this.elementDialog.style.visibility = "visible";
+        this.timeView.update();
     }
 
     /**

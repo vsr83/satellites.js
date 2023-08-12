@@ -1,5 +1,5 @@
 import {GregorianTime, JulianTime} from "./computation/JulianTime";
-import { TargetInfo } from "./Target";
+import { TargetInfo } from "./viewTargets/Target";
 
 enum TleFieldType {
     FIELD_NUMBER,
