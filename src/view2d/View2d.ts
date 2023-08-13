@@ -12,15 +12,46 @@ import { EarthPosition, Wgs84 } from "../computation/Wgs84";
 import { PlanetShader2d } from "./PlanetShader2d";
 import { MapShader2d } from "./MapShader2d";
 import { TargetInfo } from "../viewTargets/Target";
+import { Projection } from "./Projections";
+
+/**
+ * Configuration for the 2d view.
+ */
+export interface View2dConfig {
+    showLabels : boolean;
+    showOrbits : boolean;
+    showInfo : boolean;
+    showSun : boolean;
+    showMoon : boolean;
+    showEclipses: boolean;
+    showLinesLatitude : boolean;
+    showLinesLongitude : boolean;
+    latitudeLinesLatitude : number[];
+    latitudeLinesLongitude : number[];
+    latitudeLinesLatitudeStep : number;
+    latitudeLinesLongitudeStep : number;
+    orbitsForward : number;
+    orbitsBackward : number;
+    labelsRegex : string;
+    orbitsRegex : string;
+}
 
 /**
  * Class implementing the 2d view.
  */
 export class View2d implements IVisibility
 {
+    // Time view providing current time.
     private timeView : TimeView;
+
+    // The dataset being visualized.
     private dataset : Dataset;
+
+    // Propagation tools.
     private propagation : Propagation;
+
+    // Projection tools.
+    private projection : Projection;
 
     // HTML element for 2d canvas.
     private canvas2d : HTMLCanvasElement;
@@ -29,9 +60,13 @@ export class View2d implements IVisibility
     // HTML element for the container.
     private container : HTMLElement;
 
+    // Time correlation data object for conversions between time conventions.
     private timeCorr : TimeCorrelation;
 
+    // Shader for the planet textures with day and night visualization.
     planetShader : PlanetShader2d;
+
+    // Shared for the Earth map as lines.
     mapShader : MapShader2d;
 
     // HTML 2d canvas rendering context.
@@ -88,6 +123,7 @@ export class View2d implements IVisibility
             this.container = <HTMLElement> getElement(container);
             this.canvas2d = <HTMLCanvasElement> getElement(canvas2d);
             this.canvasGl = <HTMLCanvasElement> getElement(canvasGl);
+            this.projection = new Projection(this.canvas2d);
         }
         catch (E : any)
         {
@@ -157,11 +193,11 @@ export class View2d implements IVisibility
         const gl = this.contextGl;
         //gl.useProgram(this.programPlanet);
 
-        this.canvasGl.width = window.innerWidth; //document.documentElement.clientWidth;
-        this.canvasGl.height = window.innerHeight;// document.documentElement.clientHeight;
-        this.canvas2d.width = window.innerWidth;//document.documentElement.clientWidth;
-        this.canvas2d.height = window.innerHeight;//document.documentElement.clientHeight;
-        // console.log(this.canvasGl.width + " " + this.canvasGl.height);
+        // Maximize the canvas.
+        this.canvasGl.width = window.innerWidth; 
+        this.canvasGl.height = window.innerHeight;
+        this.canvas2d.width = window.innerWidth;
+        this.canvas2d.height = window.innerHeight;
 
         this.planetShader.draw(osvEfi);
         this.mapShader.draw();
@@ -175,11 +211,10 @@ export class View2d implements IVisibility
             const osvEfi : OsvFrame = propData[targetName];
             const pos : EarthPosition = Wgs84.coordEfiWgs84(osvEfi.position, 10, 1e-10, false);
 
-            // Draw Sun location.
-            const x = lonToX(pos.lon, this.canvas2d);
-            const y = latToY(pos.lat, this.canvas2d);
+            // Draw target location.
+            const rCanvas = this.projection.coordTargetCanvas([pos.lon, pos.lat]);
             this.context2d.beginPath();
-            this.context2d.arc(x, y, 2, 0, Math.PI * 2);
+            this.context2d.arc(rCanvas[0], rCanvas[1], 2, 0, Math.PI * 2);
             this.context2d.fillStyle = "#ffff00";
             this.context2d.fill();
 
@@ -191,7 +226,7 @@ export class View2d implements IVisibility
             this.context2d.strokeStyle = this.context2d.fillStyle;
 
             const caption : string = (<string> targetInfo.OBJECT_NAME).trim() + " ";
-            this.context2d.fillText(caption, x, y); 
+            this.context2d.fillText(caption, rCanvas[0], rCanvas[1]); 
         }
     }
 

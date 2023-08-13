@@ -6,6 +6,10 @@ import { WebGLUtils } from "./WebGLUtils";
 export class MapShader2d
 {
     private static vertShaderLine : string = `#version 300 es
+    
+    uniform int u_projectionType;
+    #define PROJECTION_EQUIRECTANGULAR 1
+    
     // an attribute is an input (in) to a vertex shader.
     // It will receive data from a buffer
     in vec2 a_position;
@@ -14,16 +18,21 @@ export class MapShader2d
     // a varying to pass the texture coordinates to the fragment shader
     out vec4 v_color;
     
+    vec2 coordEquirectangularNorm(in vec2 coordIn)
+    {
+        return vec2(coordIn.x/180.0, coordIn.y/90.0);
+    }
+
     // all shaders have a main function
     void main() 
     {
-        // convert from 0->1 to 0->2
-        vec2 zeroToTwo = a_position * 2.0;
-      
-        // convert from 0->2 to -1->+1 (clipspace)
-        vec2 clipSpace = zeroToTwo - 1.0;
-      
-        gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+        vec2 rNorm = vec2(0.0, 0.0);      
+        switch(u_projectionType) {
+            case PROJECTION_EQUIRECTANGULAR:
+                rNorm = coordEquirectangularNorm(a_position);      
+            break;
+        }
+        gl_Position = vec4(rNorm, 0, 1);
       
         // pass the texCoord to the fragment shader
         // The GPU will interpolate this value between points.
@@ -57,6 +66,8 @@ export class MapShader2d
     positionBufferLine : WebGLBuffer;
     colorBufferLine : WebGLBuffer;
     numLines : number;
+    projectionTypeLocation : WebGLUniformLocation;
+
     private static colorMap : number[] = [127, 127, 127];
     // Earth map polygons.
     private mapPolygons : number[][][];
@@ -96,6 +107,9 @@ export class MapShader2d
         gl.enableVertexAttribArray(this.colorAttrLocationLine);
         gl.vertexAttribPointer(this.colorAttrLocationLine, 3, gl.UNSIGNED_BYTE, true, 0, 0);
 
+        this.projectionTypeLocation = <WebGLUniformLocation> gl.getUniformLocation(
+            this.programLine, "u_projectionType");
+
         this.loadMapJson(urlMapJson);
     }
 
@@ -106,6 +120,7 @@ export class MapShader2d
     {
         const gl = this.contextGl;
         gl.useProgram(this.programLine);
+        gl.uniform1i(this.projectionTypeLocation, 1);
         gl.bindVertexArray(this.vertexArrayLine);
         gl.drawArrays(gl.LINES, 0, this.numLines * 2);
     }
@@ -142,8 +157,10 @@ export class MapShader2d
         {
             let point = points[indPoint];
             let indStart = indPoint * 2;
-            positions[indStart] = (point[0]+180.0)/360.0;
-            positions[indStart + 1] = 1-(point[1]+90.0)/180.0;
+            //positions[indStart] = (point[0]+180.0)/360.0;
+            //positions[indStart + 1] = 1-(point[1]+90.0)/180.0;
+            positions[indStart] = point[0];
+            positions[indStart + 1] = point[1];
         }
         gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBufferLine);
         gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);

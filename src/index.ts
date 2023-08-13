@@ -25,6 +25,7 @@ import { Propagation } from "./Propagation";
 import { PlanetShader2d } from "./view2d/PlanetShader2d";
 import { MapShader2d } from "./view2d/MapShader2d";
 import { WebGLUtils } from "./view2d/WebGLUtils";
+import { Projection, ProjectionType } from "./view2d/Projections";
 
 export {TargetCollection};
 export {TargetView};
@@ -53,3 +54,4 @@ export {Propagation};
 export {WebGLUtils};
 export {PlanetShader2d};
 export {MapShader2d};
+export {Projection, ProjectionType};
