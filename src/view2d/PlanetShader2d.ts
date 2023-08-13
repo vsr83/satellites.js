@@ -1,10 +1,18 @@
 import { OsvFrame } from "../computation/Frames";
 import { MathUtils } from "../computation/MathUtils";
+import { ProjectionType } from "./Projections";
 import { WebGLUtils } from "./WebGLUtils";
 
 export class PlanetShader2d
 {
     private static vertShaderPlanet : string = `#version 300 es
+
+    uniform int u_projectionType;
+    #define PROJECTION_EQUIRECTANGULAR 1
+    #define PROJECTION_AZI_EQDIST      2
+
+    #define PI 3.1415926538    
+
     // an attribute is an input (in) to a vertex shader.
     // It will receive data from a buffer
     in vec2 a_position;
@@ -16,21 +24,72 @@ export class PlanetShader2d
     
     // a varying to pass the texture coordinates to the fragment shader
     out vec2 v_texcoord;
+
+    vec2 coordEquirectangularNorm(in vec2 coordIn)
+    {
+        return vec2(coordIn.x/180.0, coordIn.y/90.0);
+    }
+
+    float deg2rad(in float deg)
+    {
+        return 2.0 * PI * deg / 360.0; 
+    }
+
+    float rad2deg(in float rad)
+    {
+        return 360.0 * rad / (2.0 * PI);
+    }
+
+    float cosd(in float deg)
+    {
+        return cos(deg2rad(deg));
+    }
+
+    float sind(in float deg)
+    {
+        return sin(deg2rad(deg));
+    }
+
+    float atan2d(in float y, in float x)
+    {
+        return rad2deg(atan(deg2rad(y), deg2rad(x)));
+    }
+
+    vec2 coordEquirectangularAziEq(in vec2 coordIn)
+    {
+        float lonDeg = coordIn.x;
+        float latDeg = coordIn.y;
+
+        float r = (90.0 - latDeg) / 180.0;
+        return vec2(r * cosd(lonDeg), r * sind(lonDeg));
+    }
+
+    vec2 normToTexture(in vec2 normIn)
+    {
+        vec2 textNorm = vec2(normIn.x/180.0, normIn.y/90.0);
+        return vec2((textNorm.x + 1.0) * 0.5, 1.0 - (textNorm.y + 1.0) * 0.5);
+    }
     
     // all shaders have a main function
     void main() 
     {
-        // convert from 0->1 to 0->2
-        vec2 zeroToTwo = a_position * 2.0;
+        vec2 rNorm = vec2(0.0, 0.0);      
+        switch(u_projectionType) {
+            case PROJECTION_EQUIRECTANGULAR:
+                rNorm = coordEquirectangularNorm(a_position);
+            break;
+            case PROJECTION_AZI_EQDIST:
+                rNorm = coordEquirectangularAziEq(a_position);
+            break;
+        }
+        gl_Position = vec4(rNorm, 0, 1);
+
+        vec2 rTexCoord = coordEquirectangularNorm(a_texcoord);
       
-        // convert from 0->2 to -1->+1 (clipspace)
-        vec2 clipSpace = zeroToTwo - 1.0;
-      
-        gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
-      
-        // pass the texCoord to the fragment shader
-        // The GPU will interpolate this value between points.
-        v_texcoord = a_texcoord;        
+        // The input texture coordinates use the equirectuangular projection and are
+        // not projected into other projections. All Projections are implemented via 
+        // changes to the vertex coordinates.
+        v_texcoord = normToTexture(a_texcoord);
     }
     `;
 
@@ -206,6 +265,8 @@ export class PlanetShader2d
     // Vertex array for the planet.
     private vertexArrayPlanet : WebGLVertexArrayObject;
 
+    projectionTypeLocation : WebGLUniformLocation;
+
     // Number of textures already loaded.
     private numTextures : number;
 
@@ -238,34 +299,26 @@ export class PlanetShader2d
         this.posAttrLocation = gl.getAttribLocation(this.programPlanet, "a_position");
         this.texAttrLocation = gl.getAttribLocation(this.programPlanet, "a_texcoord");
 
+        // TODO: Projections require large amount of triangles?
         this.vertexArrayPlanet = <WebGLVertexArrayObject> gl.createVertexArray();
         gl.bindVertexArray(this.vertexArrayPlanet);
         let positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            0.0,  0.0,
-            1.0,  0.0,
-            0.0,  1.0,
-            0.0,  1.0,
-            1.0,  0.0,
-            1.0,  1.0,
-        ]), gl.STATIC_DRAW);
+        this.setGeometry(50, 50);
+
         gl.enableVertexAttribArray(this.posAttrLocation);
         gl.vertexAttribPointer(this.posAttrLocation, 2, gl.FLOAT, false, 0, 0);
 
         // Load Texture and vertex coordinate buffers. 
         var texCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            0.0,  0.0,
-            1.0,  0.0,
-            0.0,  1.0,
-            0.0,  1.0,
-            1.0,  0.0,
-            1.0,  1.0,
-        ]), gl.STATIC_DRAW);
+        this.setGeometry(50, 50);
+
         gl.enableVertexAttribArray(this.texAttrLocation);
         gl.vertexAttribPointer(this.texAttrLocation, 2, gl.FLOAT, false, 0, 0);
+
+        this.projectionTypeLocation = <WebGLUniformLocation> gl.getUniformLocation(
+            this.programPlanet, "u_projectionType");
         
         // Load textures:
         const imageDay = new Image();
@@ -284,8 +337,86 @@ export class PlanetShader2d
         imageNight.addEventListener('load', function() {
             instance.loadTexture(1, imageNight, imageLocationNight);
         });
-    }    
+    }
 
+    /**
+     * Insert array of numbers into Float32Array;
+     * 
+     * @param {*} buffer 
+     *      Target buffer.
+     * @param {*} index 
+     *      Start index.
+     * @param {*} arrayIn 
+     *      Array to be inserted.
+     */
+    insertBufferFloat32(buffer : Float32Array, index : number, arrayIn : number[])
+    {
+        for (let indArray = 0; indArray < arrayIn.length; indArray++)
+        {
+            buffer[index + indArray] = arrayIn[indArray]; 
+        }
+    }
+
+    /**
+     * Insert square segment of a sphere into a Float32Buffer.
+     * 
+     * @param {*} buffer 
+     *      The target buffer.
+     * @param {*} indRect 
+     *      The index of the rectangle.
+     * @param {*} lonStart 
+     *      Longitude start of the rectangle.
+     * @param {*} lonEnd 
+     *      Longitude end of the rectangle.
+     * @param {*} latStart 
+     *      Latitude start of the rectangle.
+     * @param {*} latEnd 
+     *      Latitude end of the rectangle.
+     */
+    insertRectGeo(buffer : Float32Array, indRect : number, lonStart : number, lonEnd : number, 
+        latStart : number, latEnd : number)
+    {
+        const indStart = indRect * 2 * 6;
+
+        const x1 = lonStart;
+        const y1 = latStart;
+        const x2 = lonEnd;
+        const y2 = latStart;
+        const x3 = lonEnd;
+        const y3 = latEnd;
+        const x4 = lonStart;
+        const y4 = latEnd
+
+        this.insertBufferFloat32(buffer, indStart, [x1,y1, x2,y2, x3,y3, 
+            x1,y1, x3,y3, x4,y4]);
+    }
+
+    /**
+     * Fill vertex buffer for sphere triangles.
+     */
+    setGeometry(nLon : number, nLat : number) 
+    {
+        const gl = this.contextGl;
+        const nTri = nLon * nLat * 2;
+        const nPoints = nTri * 3;
+        const positions = new Float32Array(nPoints * 2);
+
+        for (let lonStep = 0; lonStep < nLon; lonStep++)
+        {
+            const lon = 360 * (lonStep / nLon - 0.5);
+            const lonNext = 360 * ((lonStep + 1) / nLon - 0.5);
+
+            for (let latStep = 0; latStep <= nLat - 1; latStep++)
+            {
+                const lat =  180 * (latStep / nLat - 0.5);
+                const latNext = 180 * ((latStep + 1) / nLat - 0.5);
+                const indTri = latStep + lonStep * nLat;
+                this.insertRectGeo(positions, indTri, lon, lonNext, lat, latNext);
+            }  
+        }
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+    }
+    
     /**
      * Load texture.
      * 
@@ -318,7 +449,7 @@ export class PlanetShader2d
         this.numTextures++;
     }
 
-    draw(osvEfiSun : OsvFrame)
+    draw(osvEfiSun : OsvFrame, projectionType : ProjectionType)
     {
         if (this.numTextures < 2)
         {
@@ -327,6 +458,8 @@ export class PlanetShader2d
         const gl = this.contextGl;
 
         gl.useProgram(this.programPlanet);
+
+        gl.uniform1i(this.projectionTypeLocation, projectionType.valueOf());
 
         const sunXLocation = gl.getUniformLocation(this.programPlanet, "u_sun_x");
         const sunYLocation = gl.getUniformLocation(this.programPlanet, "u_sun_y");
@@ -350,6 +483,6 @@ export class PlanetShader2d
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.bindVertexArray(this.vertexArrayPlanet);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);    
+        gl.drawArrays(gl.TRIANGLES, 0, 2500 * 6);    
     }
 }

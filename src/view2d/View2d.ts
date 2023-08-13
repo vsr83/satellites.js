@@ -47,6 +47,9 @@ export class View2d implements IVisibility
     // The dataset being visualized.
     private dataset : Dataset;
 
+    // The currently selected target.
+    private selection : string;
+
     // Propagation tools.
     private propagation : Propagation;
 
@@ -90,6 +93,7 @@ export class View2d implements IVisibility
         this.propagation = propagation;
         this.planetShader = new PlanetShader2d();
         this.mapShader = new MapShader2d();
+        this.selection = "";
     }
 
     /**
@@ -155,26 +159,6 @@ export class View2d implements IVisibility
      */
     draw()
     {
-        function lonToX(lon : number, canvasJs : HTMLCanvasElement) : number
-        {
-            return canvasJs.width * ((lon + 180.0) / 360.0);
-        }
-        
-        function latToY(lat : number, canvasJs : HTMLCanvasElement) : number
-        {
-            return canvasJs.height * ((-lat + 90.0) / 180.0);
-        }
-        
-        function xToLon(x : number, canvasJs  : HTMLCanvasElement) : number
-        {
-            return (360.0 * (x - canvasJs.width / 2)) / canvasJs.width;
-        }
-        
-        function yToLat(y : number, canvasJs : HTMLCanvasElement) : number
-        {
-            return -(180.0 * (y - canvasJs.height / 2)) / canvasJs.height;
-        }
-
         const JT = this.timeView.update();
 
         if (this.isVisible())
@@ -182,12 +166,20 @@ export class View2d implements IVisibility
             requestAnimationFrame(this.draw.bind(this));
         }
 
+        if (Object.keys(this.propagation.getPropagationData()).length > 0) {
+            // Placeholder
+            this.selection = Object.keys(this.propagation.getPropagationData())[0];
+        } else {
+            this.selection = "";
+        }
+
+
         const timeStamp : TimeStamp = this.timeCorr.computeTimeStamp(JT, TimeConvention.TIME_UTC, true);
         const nutData : NutationData = Nutation.iau1980(timeStamp);
 
         const osvEfi = this.computeSunEfi(timeStamp, nutData);
 
-        const propData : PropagatedOsvData = this.propagation.propagateAll(JT);
+        const propData : PropagatedOsvData = this.propagation.propagateAll(JT, undefined);
         //console.log(osvEfi);
 
         const gl = this.contextGl;
@@ -199,8 +191,10 @@ export class View2d implements IVisibility
         this.canvas2d.width = window.innerWidth;
         this.canvas2d.height = window.innerHeight;
 
-        this.planetShader.draw(osvEfi);
-        this.mapShader.draw();
+        this.planetShader.draw(osvEfi, this.projection.projectionType);
+        this.mapShader.draw(this.projection.projectionType);
+
+        this.drawOrbit(timeStamp);
 
         const targetNames : string[] = Object.keys(propData);
         for (let indTarget = 0; indTarget < targetNames.length; indTarget++)
@@ -212,9 +206,13 @@ export class View2d implements IVisibility
             const pos : EarthPosition = Wgs84.coordEfiWgs84(osvEfi.position, 10, 1e-10, false);
 
             // Draw target location.
-            const rCanvas = this.projection.coordTargetCanvas([pos.lon, pos.lat]);
+            const rEqu = [pos.lon, pos.lat];
+            //const rTarget = this.projection.coordEquirectangularTarget(rEqu);
+            //const rCanvas = this.projection.coordNormCanvas(rTarget);
+            const rCanvas = this.projection.coordEquirectangularCanvas(rEqu);
+
             this.context2d.beginPath();
-            this.context2d.arc(rCanvas[0], rCanvas[1], 2, 0, Math.PI * 2);
+            this.context2d.arc(rCanvas[0], rCanvas[1], 4, 0, Math.PI * 2);
             this.context2d.fillStyle = "#ffff00";
             this.context2d.fill();
 
@@ -228,6 +226,40 @@ export class View2d implements IVisibility
             const caption : string = (<string> targetInfo.OBJECT_NAME).trim() + " ";
             this.context2d.fillText(caption, rCanvas[0], rCanvas[1]); 
         }
+    }
+
+    /**
+     * Try drawing the orbit of the current selection.
+     * 
+     * @param {TimeStamp} timeStamp 
+     *      Timestamp.
+     */
+    drawOrbit(timeStamp : TimeStamp) : void {
+        if (this.selection.length == 0) {
+            return;
+        }
+
+        const orbitData : EarthPosition[] = this.propagation.propagateOneRange(this.selection, 
+            timeStamp.JTut1 - 2.0/24.0, timeStamp.JTut1 + 2.0/24.0, 1.0/1440.0, undefined);
+
+        let prev : number[] = [0.0, 0.0];
+        for (let indData = 0; indData < orbitData.length - 1; indData++) {
+            const posStart : EarthPosition = orbitData[indData];
+            const posEnd : EarthPosition = orbitData[indData + 1];
+
+            const rCanvasStart = this.projection.coordEquirectangularCanvas([posStart.lon, posStart.lat]);
+            const rCanvasEnd = this.projection.coordEquirectangularCanvas([posEnd.lon, posEnd.lat]);
+
+            if (Math.sqrt(Math.pow(rCanvasStart[0] - rCanvasEnd[0], 2) + 
+                        Math.pow(rCanvasStart[1] - rCanvasEnd[1], 2)) < 100.0) {
+                this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
+                this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
+                        
+            }
+            prev = rCanvasEnd;
+        }
+        this.context2d.strokeStyle = "#999999";
+        this.context2d.stroke();
     }
 
     /**

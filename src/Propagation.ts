@@ -5,6 +5,7 @@ import { Tle } from "./Tle";
 import { TimeConvention, TimeCorrelation, TimeStamp } from "./computation/TimeCorrelation";
 import { Frames, OsvFrame } from "./computation/Frames";
 import { Nutation, NutationData } from "./computation/Nutation";
+import { Wgs84, EarthPosition } from "./computation/Wgs84";
 
 export type PropagationData = {
     [key : string] : Sgp4Propagation
@@ -73,15 +74,59 @@ export class Propagation
      * 
      * @param {number} JT 
      *      Julian time.
+     * @param {NutationData | null} nutation
+     *      Nutation data.
      * @returns {PropagatedOsvData} Propagated OSV data.
      */
-    propagateAll(JT : number) : PropagatedOsvData
+    propagateOneRange(targetName : string, JTmin : number, JTmax : number, JTstep : number, 
+        nutation : NutationData | undefined) 
+    : EarthPosition[]
+    {
+        const timeStampStart : TimeStamp = this.timeCorrelation.computeTimeStamp(JTmin, TimeConvention.TIME_UT1, false);
+
+        if (nutation === undefined) {
+            nutation = Nutation.iau1980(timeStampStart);
+        }
+
+        const data : EarthPosition[] = [];
+        const propagation = this.propData[targetName];
+
+        for (let JT = JTmin; JT <= JTmax; JT += JTstep)
+        {
+            const tSince : number = (JT - propagation.tle.jtUt1Epoch) * 1440.0;
+            const osv : OsvFrame = propagation.compute(tSince);
+
+            const osvMod = Frames.coordJ2000Mod(osv);
+            const osvTod = Frames.coordModTod(osvMod, <NutationData> nutation);
+            const osvPef = Frames.coordTodPef(osvTod, <NutationData> nutation);
+            const osvEfi = Frames.coordPefEfi(osvPef);
+            const pos : EarthPosition = Wgs84.coordEfiWgs84(osvEfi.position, 10, 1e-10, false);
+
+            data.push(pos); 
+        }
+
+        return data;
+    }
+
+    /**
+     * Propagate all TLEs in the dataset.
+     * 
+     * @param {number} JT 
+     *      Julian time.
+     * @param {NutationData | undefined} nutation
+     *      Nutation data.
+     * @returns {PropagatedOsvData} Propagated OSV data.
+     */
+    propagateAll(JT : number, nutation : NutationData | undefined) : PropagatedOsvData
     {
         const targetNames : string[] = Object.keys(this.propData);
         const propagated : PropagatedOsvData = {};
 
         const timeStamp : TimeStamp = this.timeCorrelation.computeTimeStamp(JT, TimeConvention.TIME_UT1, false);
-        const nutation : NutationData = Nutation.iau1980(timeStamp);
+        
+        if (nutation === undefined) {
+            nutation = Nutation.iau1980(timeStamp);
+        }
 
         for (let indTarget = 0; indTarget < targetNames.length; indTarget++)
         {
@@ -92,13 +137,17 @@ export class Propagation
             const osv : OsvFrame = propagation.compute(tSince);
 
             const osvMod = Frames.coordJ2000Mod(osv);
-            const osvTod = Frames.coordModTod(osvMod, nutation);
-            const osvPef = Frames.coordTodPef(osvTod, nutation);
+            const osvTod = Frames.coordModTod(osvMod, <NutationData> nutation);
+            const osvPef = Frames.coordTodPef(osvTod, <NutationData> nutation);
             const osvEfi = Frames.coordPefEfi(osvPef);
 
             propagated[targetName] = osvEfi; 
         }
 
         return propagated;
+    }
+
+    getPropagationData() : PropagationData {
+        return this.propData;
     }
 }

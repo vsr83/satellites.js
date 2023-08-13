@@ -1,3 +1,4 @@
+import { ProjectionType } from "./Projections";
 import { WebGLUtils } from "./WebGLUtils";
 
 /**
@@ -9,18 +10,55 @@ export class MapShader2d
     
     uniform int u_projectionType;
     #define PROJECTION_EQUIRECTANGULAR 1
+    #define PROJECTION_AZI_EQDIST      2
     
     // an attribute is an input (in) to a vertex shader.
     // It will receive data from a buffer
     in vec2 a_position;
     in vec4 a_color;
         
+    #define PI 3.1415926538    
+
     // a varying to pass the texture coordinates to the fragment shader
     out vec4 v_color;
+    
+    float deg2rad(in float deg)
+    {
+        return 2.0 * PI * deg / 360.0; 
+    }
+
+    float rad2deg(in float rad)
+    {
+        return 360.0 * rad / (2.0 * PI);
+    }
+
+    float cosd(in float deg)
+    {
+        return cos(deg2rad(deg));
+    }
+
+    float sind(in float deg)
+    {
+        return sin(deg2rad(deg));
+    }
+
+    float atan2d(in float y, in float x)
+    {
+        return rad2deg(atan(deg2rad(y), deg2rad(x)));
+    }
     
     vec2 coordEquirectangularNorm(in vec2 coordIn)
     {
         return vec2(coordIn.x/180.0, coordIn.y/90.0);
+    }
+
+    vec2 coordEquirectangularAziEq(in vec2 coordIn)
+    {
+        float lonDeg = coordIn.x;
+        float latDeg = coordIn.y;
+
+        float r = (90.0 - latDeg) / 180.0;
+        return vec2(r * cosd(lonDeg), r * sind(lonDeg));
     }
 
     // all shaders have a main function
@@ -30,6 +68,9 @@ export class MapShader2d
         switch(u_projectionType) {
             case PROJECTION_EQUIRECTANGULAR:
                 rNorm = coordEquirectangularNorm(a_position);      
+            break;
+            case PROJECTION_AZI_EQDIST:
+                rNorm = coordEquirectangularAziEq(a_position);
             break;
         }
         gl_Position = vec4(rNorm, 0, 1);
@@ -116,11 +157,11 @@ export class MapShader2d
     /**
      * Draw.
      */
-    draw()
+    draw(projectionType : ProjectionType)
     {
         const gl = this.contextGl;
         gl.useProgram(this.programLine);
-        gl.uniform1i(this.projectionTypeLocation, 1);
+        gl.uniform1i(this.projectionTypeLocation, projectionType.valueOf());
         gl.bindVertexArray(this.vertexArrayLine);
         gl.drawArrays(gl.LINES, 0, this.numLines * 2);
     }

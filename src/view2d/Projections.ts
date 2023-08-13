@@ -1,5 +1,8 @@
+import { MathUtils } from "../computation/MathUtils";
+
 export enum ProjectionType {
     EQUIRECTANGULAR = 1,
+    AZI_EQDIST = 2
 }
 
 /**
@@ -109,7 +112,10 @@ export class Projection {
         switch (this.projectionType) {
             case ProjectionType.EQUIRECTANGULAR:
                 return rEqu;
-                break;
+            break;
+            case ProjectionType.AZI_EQDIST:
+                return this.coordEquirectangularAziEqDist(rEqu);
+            break;
         }
     }
 
@@ -125,9 +131,41 @@ export class Projection {
             case ProjectionType.EQUIRECTANGULAR:
                 return rTarget;
                 break;
+            case ProjectionType.AZI_EQDIST:
+                return this.coordAziEqDistEquirectangular(rTarget);
+                break;
         }
     }
 
+    /**
+     * Convert coordinates from azimuthal-equidistant to equirectangular.
+     * 
+     * @param {number[]} rTarget 
+     *      Azimuth-equidistant coordinates.
+     * @returns {number[]} Equirectangular coordinates.
+     */
+    coordAziEqDistEquirectangular(rTarget : number[]) : number[] {
+        const lat : number = 90.0 * (1.0 - 2.0 * Math.sqrt(rTarget[0] * rTarget[0] + rTarget[1] * rTarget[1]));
+        const lon : number = MathUtils.atan2d(rTarget[1], rTarget[0]);
+
+        return [lon, lat];
+    }
+
+    /**
+     * Convert coordinates from equirectangular to azimuthal-equidistant.
+     * 
+     * @param {number[]} rTarget 
+     *      Equirectangular coordinates.
+     * @returns {number[]} Azimuth-equidistant coordinates.
+     */
+    coordEquirectangularAziEqDist(rEqu : number[]) : number[] {
+        const lon : number = rEqu[0];
+        const lat : number = rEqu[1];
+        
+        const r : number = (90.0 - lat) / 180.0;
+        return [r * MathUtils.cosd(lon), r * MathUtils.sind(lon)];
+    }
+    
     /**
      * Convert from canvas to target coordinates.
      * 
@@ -152,5 +190,21 @@ export class Projection {
         return this.coordNormCanvas(
             this.coordEquirectangularNorm(
             this.coordTargetEquirectangular(rTarget)));
+    }
+
+    /**
+     * Map equirectangular coordinates to the canvas depending on the projection type.
+     * 
+     * @param {number[]} rEqu
+     *      Equirectangular coordinates. 
+     * @returns {number[]} Canvas coordinates.
+     */
+    coordEquirectangularCanvas(rEqu : number[]) : number[] {
+        if (this.projectionType == ProjectionType.EQUIRECTANGULAR) {
+            return this.coordNormCanvas(this.coordEquirectangularNorm(rEqu));
+        }
+        else {
+            return this.coordNormCanvas(this.coordEquirectangularTarget(rEqu));
+        }
     }
 }
