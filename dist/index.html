@@ -4,6 +4,7 @@
         <link rel="stylesheet" href="panel.css">
         <link rel="stylesheet" href="view2d.css">
         <link rel="stylesheet" href="time.css">
+        <link rel="stylesheet" href="configuration.css">
     </head>
     <body>
         <script src="./satellites.js"></script>
@@ -99,7 +100,6 @@
         </div>
 
         <div id="configuration">
-            Configuration
         </div>
         
         <script>
@@ -177,7 +177,23 @@
 
             const confView = new satellites.ConfigurationView(satellites.defaultConfiguration);
             confView.setElement("configuration");
-            confView.createElements();
+            confView.parseLayout(satellites.defaultLayout);
+
+            /*
+            var coll = document.getElementsByClassName("configuration_collapsible");
+            var i;
+
+            for (i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.maxHeight){
+                content.style.maxHeight = null;
+                } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                } 
+            });
+            }*/
 
         </script>
     </body>

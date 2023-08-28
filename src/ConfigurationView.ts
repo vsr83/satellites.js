@@ -1,4 +1,4 @@
-import { IOption, OptionType, Configuration, ConfigurationData } from "./Configuration";
+import { IOption, OptionType, Configuration, ConfigurationData, OptionLayout } from "./Configuration";
 
 export class ConfigurationView {
     constructor(configuration : Configuration) {
@@ -9,42 +9,70 @@ export class ConfigurationView {
         this.parentElement = <HTMLElement> document.getElementById(parentElementId);
     }
 
-    createElements() {
-        console.log("createElements");
-
+    parseLayout(layout : OptionLayout[]) {
         const configurationData : ConfigurationData = this.configuration.getData();
 
         console.log(configurationData);
 
         const keyList = Object.keys(configurationData);
         
-        for (let indKey = 0; indKey < keyList.length; indKey++) {
-            const optionDiv : HTMLElement = document.createElement("div");
-            optionDiv.setAttribute("class", "configuration_div");
-            this.parentElement.appendChild(optionDiv);
+        for (let indGroup = 0; indGroup < layout.length; indGroup++) {
+            const object : OptionLayout = layout[indGroup];
 
-            const key : string = keyList[indKey];
-            const option : IOption = configurationData[key];
+            const button : HTMLElement = document.createElement("button");
+            const textNode = document.createTextNode(object["title"]);
+            button.setAttribute("class", "configuration_collapsible");
+            button.appendChild(textNode);
+            this.parentElement.appendChild(button);
 
-            if (option.optionType == OptionType.OPTION_BOOLEAN) 
-            {
-                this.addBoolean(key, option, this.parentElement);
+            console.log("Processing " + object["title"]);
+
+            const div : HTMLElement = document.createElement("div");
+            this.parentElement.appendChild(div);
+
+            button.addEventListener("click", function() {
+                if (div.style.visibility != "hidden"){
+                    div.style.visibility = "hidden";
+                    div.style.maxHeight = "0px";
+                    button.classList.toggle("configuration_collapsible_active");
+                } else {
+                    div.style.visibility = "visible";
+                    div.style.maxHeight = div.scrollHeight + "px";
+                    button.classList.remove("configuration_collapsible_active");
+                } 
+            });
+
+            for (let indOption = 0; indOption < object["options"].length; indOption++) {
+                const key : string = object["options"][indOption];
+                const option : IOption = configurationData[key];
+    
+                this.createElement(key, option, div);
+
+                console.log(key);
             }
-            else if (option.optionType == OptionType.OPTION_RANGE_FLOAT)
-            {
-                this.addFloatRange(key, option, this.parentElement);
-            }
-            else if (option.optionType == OptionType.OPTION_STRING)
-            {
-                this.addString(key, option, this.parentElement);
-            }
+
+        }
+    }
+
+    createElement(key : string, option : IOption, div : HTMLElement) {
+        if (option.optionType == OptionType.OPTION_BOOLEAN) 
+        {
+            this.addBoolean(key, option, div);
+        }
+        else if (option.optionType == OptionType.OPTION_RANGE_FLOAT)
+        {
+            this.addFloatRange(key, option, div);
+        }
+        else if (option.optionType == OptionType.OPTION_STRING)
+        {
+            this.addString(key, option, div);
         }
     }
 
     addBoolean(key : string, option : IOption, parentElement : HTMLElement) {
         const optionDiv : HTMLElement = document.createElement("div");
         optionDiv.setAttribute("class", "configuration_div");
-        this.parentElement.appendChild(optionDiv);
+        parentElement.appendChild(optionDiv);
 
         const checkBox : HTMLInputElement = document.createElement("input");
         checkBox.setAttribute("type", "checkbox");
@@ -56,6 +84,7 @@ export class ConfigurationView {
         });
 
         const label : HTMLElement = document.createElement("label");
+        label.setAttribute("class", "configuration_label");
 
         label.addEventListener('click', function() {
             checkBox.checked = !option.booleanValue;
@@ -74,6 +103,9 @@ export class ConfigurationView {
         optionDiv.setAttribute("class", "configuration_div");
         parentElement.appendChild(optionDiv);
 
+        console.log("addFloatRange");
+        console.log(parentElement);
+
         const range : HTMLInputElement = document.createElement("input");
 
         const nSteps = Math.floor((<number> option.maxValue - <number> option.minValue) 
@@ -89,8 +121,9 @@ export class ConfigurationView {
         range.checked = <boolean> option.booleanValue;
 
         const label : HTMLElement = document.createElement("label");
-
+        label.setAttribute("class", "configuration_label");
         label.setAttribute("for", key);
+
         const textNode = document.createTextNode(option.caption);
         label.appendChild(textNode);
         optionDiv.appendChild(label);
@@ -136,6 +169,7 @@ export class ConfigurationView {
         parentElement.appendChild(optionDiv);
 
         const label : HTMLElement = document.createElement("label");
+        label.setAttribute("class", "configuration_label");
         const textNode = document.createTextNode(option.caption);
         label.appendChild(textNode);
         optionDiv.appendChild(label);

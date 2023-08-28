@@ -176,28 +176,36 @@ defaultConfiguration.addRangeFloat('orbitsForward', 'Num. Orbits Forward', 1.0, 
 defaultConfiguration.addRangeFloat('orbitsBackward', 'Num. Orbits Backward', 1.0, 0.0, 10.0, 0.1);
 defaultConfiguration.addString('dummyParameter', 'dummyCaption', 'value');
 
-export const defaultLayout = [
-    [
-        {
-            title : "Visibility",
-            options : [
-                "showLabels",
-                "showOrbits",
-                "showInfo",
-                "showSun",
-                "showMoon",
-                "showEclipses",
-                "showStars",
-                "showLinesLatitude",
-                "showLinesLongitude"
-            ]
-        },
-        {
-            title: "Grid",
-            options : [
-                "showLinesLatitude",
-                "showLinesLongitude"
-            ]
-        }
-    ]
+export interface OptionLayout {
+    title : string;
+    options : string[];
+};
+
+export const defaultLayout : OptionLayout[] = [
+    {
+        title : "Visibility",
+        options : [
+            "showLabels",
+            "showOrbits",
+            "showInfo",
+            "showSun",
+            "showMoon",
+            "showEclipses",
+            "showStars"
+        ]
+    },
+    {
+        title: "Orbits",
+        options : [
+            "orbitsBackward",
+            "orbitsForward"
+        ]
+    },
+    {
+        title: "Grid",
+        options : [
+            "showLinesLatitude",
+            "showLinesLongitude"
+        ]
+    },
 ];
