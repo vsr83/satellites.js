@@ -18,7 +18,7 @@ export class Projection {
 
     // All coordinate transformations involve transformations between the
     // following four coordinates systems. For equirectangular coordinates, 
-    // The conversion between 3 and 4 is always an identity mapping.
+    // the conversion between 3 and 4 is always an identity mapping.
     // 1. Canvas coordinates:
     // x : [0, canvasJs.width]
     // y : [0, canvasJs.height], where 0 corresponds to top.

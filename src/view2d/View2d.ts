@@ -15,28 +15,6 @@ import { TargetInfo } from "../viewTargets/Target";
 import { Projection } from "./Projections";
 
 /**
- * Configuration for the 2d view.
- */
-export interface View2dConfig {
-    showLabels : boolean;
-    showOrbits : boolean;
-    showInfo : boolean;
-    showSun : boolean;
-    showMoon : boolean;
-    showEclipses: boolean;
-    showLinesLatitude : boolean;
-    showLinesLongitude : boolean;
-    latitudeLinesLatitude : number[];
-    latitudeLinesLongitude : number[];
-    latitudeLinesLatitudeStep : number;
-    latitudeLinesLongitudeStep : number;
-    orbitsForward : number;
-    orbitsBackward : number;
-    labelsRegex : string;
-    orbitsRegex : string;
-}
-
-/**
  * Class implementing the 2d view.
  */
 export class View2d implements IVisibility

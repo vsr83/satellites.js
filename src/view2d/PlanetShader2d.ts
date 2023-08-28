@@ -264,12 +264,11 @@ export class PlanetShader2d
     private texAttrLocation : number;
     // Vertex array for the planet.
     private vertexArrayPlanet : WebGLVertexArrayObject;
-
+    // Uniform for the projection type.
     projectionTypeLocation : WebGLUniformLocation;
 
     // Number of textures already loaded.
     private numTextures : number;
-
 
     /**
      * Public constructor.

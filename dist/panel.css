@@ -23,3 +23,81 @@ p
 {
     color: white;
 }
+
+#configuration
+{
+    right: 0px;
+    width: 200px;
+    height: 600px;
+    z-index: 10;
+    position: absolute;
+    top: 0;
+}
+
+.configuration_div 
+{
+    background-color: #222222;    
+}
+
+.configuration_label 
+{
+    font-size: small;
+}
+
+.slidecontainer {
+    width: 100%;
+  }
+  
+.configuration_slider {
+    -webkit-appearance: none;
+    width: 130px;
+    height: 15px;
+    background: #222222;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.configuration_slider:hover {
+    opacity: 1;
+}
+
+.configuration_slider_textarea {
+    width: 50px;
+    height: 15px;
+    resize: none;
+    border: 0px;
+    padding: 0px;
+    box-sizing: unset;
+    vertical-align: middle;
+    background: #222222;
+}
+
+.configuration_string_textarea {
+    width: 130px;
+    height: 15px;
+    resize: none;
+    border: 0px;
+    padding: 0px;
+    box-sizing: unset;
+    vertical-align: middle;
+    background: #222222;
+}
+
+
+.configuration_slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #999999;
+    cursor: pointer;
+}
+
+.configuration_slider::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    background: #999999;
+    cursor: pointer;
+}

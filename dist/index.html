@@ -97,6 +97,10 @@
 
         <div id="panel">
         </div>
+
+        <div id="configuration">
+            Configuration
+        </div>
         
         <script>
             const timeCorrelation = new satellites.TimeCorrelation();
@@ -170,6 +174,10 @@
             const panelView = new satellites.PanelView(panel, "panel", 75);
             panel.showElement("dataset");
             panelView.create();
+
+            const confView = new satellites.ConfigurationView(satellites.defaultConfiguration);
+            confView.setElement("configuration");
+            confView.createElements();
 
         </script>
     </body>
