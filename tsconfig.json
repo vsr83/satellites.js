@@ -12,6 +12,6 @@
     "allowJs": true
   },
   "files": [
-    "src/Target.ts"
+    "src/viewTargets/Target.ts"
   ]
 }
