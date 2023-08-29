@@ -13,7 +13,7 @@ import { PlanetShader2d } from "./PlanetShader2d";
 import { MapShader2d } from "./MapShader2d";
 import { TargetInfo } from "../viewTargets/Target";
 import { Projection, ProjectionType } from "./Projections";
-import { Configuration } from "../Configuration";
+import { Configuration } from "../configuration/Configuration";
 
 /**
  * Class implementing the 2d view.

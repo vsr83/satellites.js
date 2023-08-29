@@ -26,8 +26,8 @@ import { PlanetShader2d } from "./view2d/PlanetShader2d";
 import { MapShader2d } from "./view2d/MapShader2d";
 import { WebGLUtils } from "./view2d/WebGLUtils";
 import { Projection, ProjectionType } from "./view2d/Projections";
-import { Configuration, defaultConfiguration, defaultLayout } from "./Configuration";
-import { ConfigurationView } from "./ConfigurationView";
+import { Configuration, defaultConfiguration, defaultLayout } from "./configuration/Configuration";
+import { ConfigurationView } from "./configuration/ConfigurationView";
 
 export {TargetCollection};
 export {TargetView};
