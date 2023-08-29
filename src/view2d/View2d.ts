@@ -12,7 +12,8 @@ import { EarthPosition, Wgs84 } from "../computation/Wgs84";
 import { PlanetShader2d } from "./PlanetShader2d";
 import { MapShader2d } from "./MapShader2d";
 import { TargetInfo } from "../viewTargets/Target";
-import { Projection } from "./Projections";
+import { Projection, ProjectionType } from "./Projections";
+import { Configuration } from "../Configuration";
 
 /**
  * Class implementing the 2d view.
@@ -55,20 +56,29 @@ export class View2d implements IVisibility
     // WebGL2 rendering context.
     contextGl : WebGL2RenderingContext;
 
+    // Configuration.
+    configuration : Configuration;
+
     /**
      * Public constructor.
      * 
+     * @param {Propagation} propagation
+     *      Propagation.
      * @param {TimeView} timeView
      *      Time view.
+     * @param {Configuration} configuration
+     *      Configuration
      */
     constructor(dataset : Dataset, 
         propagation : Propagation, 
-        timeView : TimeView)
+        timeView : TimeView,
+        configuration : Configuration)
     {
         this.timeCorr = new TimeCorrelation();
         this.timeView = timeView;
         this.dataset = dataset;
         this.propagation = propagation;
+        this.configuration = configuration;
         this.planetShader = new PlanetShader2d();
         this.mapShader = new MapShader2d();
         this.selection = "";
@@ -169,10 +179,21 @@ export class View2d implements IVisibility
         this.canvas2d.width = window.innerWidth;
         this.canvas2d.height = window.innerHeight;
 
+        switch (this.configuration.getString("coordinates2d")) {
+            case "Rectangular":
+                this.projection.projectionType = ProjectionType.EQUIRECTANGULAR;
+                break;
+            case "Azi-Equidistant":
+                this.projection.projectionType = ProjectionType.AZI_EQDIST;
+                break;
+        }
+
         this.planetShader.draw(osvEfi, this.projection.projectionType);
         this.mapShader.draw(this.projection.projectionType);
 
-        this.drawOrbit(timeStamp);
+        if (this.configuration.getBoolean("showOrbits")) {
+            this.drawOrbit(timeStamp);
+        }
 
         const targetNames : string[] = Object.keys(propData);
         for (let indTarget = 0; indTarget < targetNames.length; indTarget++)
@@ -194,15 +215,17 @@ export class View2d implements IVisibility
             this.context2d.fillStyle = "#ffff00";
             this.context2d.fill();
 
-            this.context2d.fillStyle = "rgba(255, 255, 255)";
+            if (this.configuration.getBoolean("showLabels")) {
+                    this.context2d.fillStyle = "rgba(255, 255, 255)";
 
-            this.context2d.textAlign = "center";
-            this.context2d.textBaseline = "bottom";
-            this.context2d.textAlign = "right";
-            this.context2d.strokeStyle = this.context2d.fillStyle;
+                this.context2d.textAlign = "center";
+                this.context2d.textBaseline = "bottom";
+                this.context2d.textAlign = "right";
+                this.context2d.strokeStyle = this.context2d.fillStyle;
 
-            const caption : string = (<string> targetInfo.OBJECT_NAME).trim() + " ";
-            this.context2d.fillText(caption, rCanvas[0], rCanvas[1]); 
+                const caption : string = (<string> targetInfo.OBJECT_NAME).trim() + " ";
+                this.context2d.fillText(caption, rCanvas[0], rCanvas[1]); 
+            }
         }
     }
 
@@ -217,8 +240,12 @@ export class View2d implements IVisibility
             return;
         }
 
+        const period = this.propagation.getOrbitalPeriod(this.selection);
+
         const orbitData : EarthPosition[] = this.propagation.propagateOneRange(this.selection, 
-            timeStamp.JTut1 - 2.0/24.0, timeStamp.JTut1 + 2.0/24.0, 1.0/1440.0, undefined);
+            timeStamp.JTut1 - period * this.configuration.getNumber("orbitsBackward"),
+            timeStamp.JTut1 + period * this.configuration.getNumber("orbitsForward"), 
+            1.0/1440.0, undefined);
 
         let prev : number[] = [0.0, 0.0];
         for (let indData = 0; indData < orbitData.length - 1; indData++) {

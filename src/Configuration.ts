@@ -1,39 +1,3 @@
-/**
- * Visibility configuration.
- */
-export interface IVisibilityOptions {
-    showLabels : boolean;
-    showOrbits : boolean;
-    showInfo : boolean;
-    showSun : boolean;
-    showMoon : boolean;
-    showEclipses: boolean;
-    showLinesLatitude : boolean;
-    showLinesLongitude : boolean;
-};
-
-export interface IOrbitOptions {
-    orbitsForward : number;
-    orbitsBackward : number;
-    orbitsStep : number;
-};
-
-export interface IGridOptions {
-    stepMode : boolean;
-    latitudeLinesLatitude : number[];
-    latitudeLinesLongitude : number[];
-    latitudeLinesLatitudeStep : number;
-    latitudeLinesLongitudeStep : number;
-};
-
-/**
- * Configuration.
- */
-export interface IConfiguration {
-    visibility : IVisibilityOptions;
-    gridOptions : IGridOptions;
-    orbitsOptions : IOrbitOptions;
-};
 
 /**
  * Default configuration.
@@ -70,7 +34,8 @@ export enum OptionType {
     OPTION_RANGE_FLOAT,
     OPTION_RANGE_INTEGER,
     OPTION_ARRAY,
-    OPTION_STRING
+    OPTION_STRING,
+    OPTION_SELECT
 };
 
 export interface IOption {
@@ -79,6 +44,7 @@ export interface IOption {
     booleanValue? : boolean;
     numberValue? : number;
     arrayValue? : number[];
+    optionList? : string[];
     stringValue? : string;
     minValue? : number;
     stepSize? : number;
@@ -95,6 +61,14 @@ export class Configuration {
      */
     constructor() {
         this.data = {};
+    }
+
+    addOption(name : string, caption : string, options : string[], value : string) {
+        this.data[name] = {
+            optionType : OptionType.OPTION_SELECT,
+            caption : caption,
+            optionList : options
+        };
     }
 
     addBoolean(name : string, caption : string, value : boolean) {
@@ -154,6 +128,18 @@ export class Configuration {
         };
     }
 
+    getBoolean(name : string) : boolean {
+        return <boolean> this.data[name].booleanValue;
+    }
+
+    getNumber(name : string) : number {
+        return <number> this.data[name].numberValue;
+    }
+
+    getString(name : string) : string {
+        return <string> this.data[name].stringValue;
+    }
+
     getData() {
         return this.data;
     }
@@ -176,6 +162,9 @@ defaultConfiguration.addRangeFloat('orbitsForward', 'Num. Orbits Forward', 1.0, 
 defaultConfiguration.addRangeFloat('orbitsBackward', 'Num. Orbits Backward', 1.0, 0.0, 10.0, 0.1);
 defaultConfiguration.addString('dummyParameter', 'dummyCaption', 'value');
 
+defaultConfiguration.addOption('coordinates2d', 'Coordinate System', 
+    ['Rectangular', 'Azi-Equidistant'], 'Rectangular');
+
 export interface OptionLayout {
     title : string;
     options : string[];
@@ -192,6 +181,12 @@ export const defaultLayout : OptionLayout[] = [
             "showMoon",
             "showEclipses",
             "showStars"
+        ]
+    },
+    {
+        title: "2D View",
+        options : [
+            "coordinates2d"
         ]
     },
     {

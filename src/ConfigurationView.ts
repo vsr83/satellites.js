@@ -1,18 +1,34 @@
 import { IOption, OptionType, Configuration, ConfigurationData, OptionLayout } from "./Configuration";
 
+/**
+ * Class implementing configuration view.
+ */
 export class ConfigurationView {
+    /**
+     * Public constructor.
+     * 
+     * @param {Configuration} configuration 
+     *      Configuration used by the view.
+     */
     constructor(configuration : Configuration) {
         this.configuration = configuration;
     }
 
+    /**
+     * Set the parent element for the view.
+     */
     setElement(parentElementId : string) {
         this.parentElement = <HTMLElement> document.getElementById(parentElementId);
     }
 
+    /**
+     * Generate content for the view based on a layout.
+     * 
+     * @param {OptionLayout[]} layout 
+     *      Array of configuration groups.
+     */
     parseLayout(layout : OptionLayout[]) {
         const configurationData : ConfigurationData = this.configuration.getData();
-
-        console.log(configurationData);
 
         const keyList = Object.keys(configurationData);
         
@@ -54,6 +70,16 @@ export class ConfigurationView {
         }
     }
 
+    /**
+     * Add elements for one configuration parameter.
+     * 
+     * @param {string} key 
+     *      Key for the configuration parameter.
+     * @param {IOption} option 
+     *      Parameters for the view regarding one configuration parameter.
+     * @param {HTMLElement} div 
+     *      The parent element for the view of the option.
+     */
     createElement(key : string, option : IOption, div : HTMLElement) {
         if (option.optionType == OptionType.OPTION_BOOLEAN) 
         {
@@ -67,8 +93,22 @@ export class ConfigurationView {
         {
             this.addString(key, option, div);
         }
+        else if (option.optionType == OptionType.OPTION_SELECT) 
+        {
+            this.addOptions(key, option, div);
+        }
     }
 
+    /**
+     * Add boolean-valued option.
+     * 
+     * @param {string} key
+     *      Option key. 
+     * @param {IOption} option 
+     *      Option data.
+     * @param {HTMLElement} parentElement 
+     *      Parent HTML element.
+     */
     addBoolean(key : string, option : IOption, parentElement : HTMLElement) {
         const optionDiv : HTMLElement = document.createElement("div");
         optionDiv.setAttribute("class", "configuration_div");
@@ -98,6 +138,61 @@ export class ConfigurationView {
         optionDiv.appendChild(label);
     }
 
+    /**
+     * Add multiple-choice option.
+     * 
+     * @param {string} key
+     *      Option key. 
+     * @param {IOption} option 
+     *      Option data.
+     * @param {HTMLElement} parentElement 
+     *      Parent HTML element.
+     */
+    addOptions(key : string, option : IOption, parentElement : HTMLElement) {
+        const optionDiv : HTMLElement = document.createElement("div");
+        optionDiv.setAttribute("class", "configuration_div");
+        parentElement.appendChild(optionDiv);
+
+        const label : HTMLElement = document.createElement("label");
+        label.setAttribute("class", "configuration_label");
+        label.setAttribute("for", key);
+        optionDiv.appendChild(label);
+        const textNode = document.createTextNode(option.caption);
+        label.appendChild(textNode);
+
+        const select : HTMLSelectElement = document.createElement("select");
+        select.setAttribute("id", "configuration_option_" + key);
+        select.setAttribute("name", key);
+        optionDiv.appendChild(select);
+
+        const optionList : string[] = <string[]> option.optionList;
+        console.log(optionList);
+
+        for (let indOption = 0; indOption < optionList.length; indOption++) 
+        {
+            const optionName : string = optionList[indOption];
+            const optionElem : HTMLOptionElement = document.createElement("option");
+            optionElem.setAttribute("value", optionName);
+            select.appendChild(optionElem);
+            const textNode = document.createTextNode(optionName);
+            optionElem.appendChild(textNode);
+        }
+
+        select.addEventListener("change", function() {
+            option.stringValue = select.value;
+        });
+    }
+
+    /**
+     * Add floating point-valued option.
+     * 
+     * @param {string} key
+     *      Option key. 
+     * @param {IOption} option 
+     *      Option data.
+     * @param {HTMLElement} parentElement 
+     *      Parent HTML element.
+     */
     addFloatRange(key : string, option : IOption, parentElement : HTMLElement) {
         const optionDiv : HTMLElement = document.createElement("div");
         optionDiv.setAttribute("class", "configuration_div");
@@ -163,6 +258,16 @@ export class ConfigurationView {
         optionDiv.appendChild(textEdit);
     }
 
+    /**
+     * Add string-valued option.
+     * 
+     * @param {string} key
+     *      Option key. 
+     * @param {IOption} option 
+     *      Option data.
+     * @param {HTMLElement} parentElement 
+     *      Parent HTML element.
+     */
     addString(key : string, option : IOption, parentElement : HTMLElement) {
         const optionDiv : HTMLElement = document.createElement("div");
         optionDiv.setAttribute("class", "configuration_div");
@@ -186,8 +291,9 @@ export class ConfigurationView {
         optionDiv.appendChild(textEdit);
     }
 
-
+    // Configuration.
     configuration : Configuration;
 
+    // HTML parent element.
     parentElement : HTMLElement;
 }

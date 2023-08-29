@@ -147,6 +147,10 @@ export class Propagation
         return propagated;
     }
 
+    getOrbitalPeriod(targetName : string) : number {
+        return 1.0 / this.propData[targetName].tle.meanMotion;
+    }
+
     getPropagationData() : PropagationData {
         return this.propData;
     }
