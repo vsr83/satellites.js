@@ -1,6 +1,7 @@
 <html>
     <head>
         <link rel="stylesheet" href="dataset.css">
+        <link rel="stylesheet" href="selection.css">
         <link rel="stylesheet" href="panel.css">
         <link rel="stylesheet" href="view2d.css">
         <link rel="stylesheet" href="time.css">
@@ -79,6 +80,20 @@
 
         <div id="helpDialog" style="visibility:hidden">
             <p>HELP_DIALOG</p>
+        </div>
+
+        <!--div id="selectionLabelContainer">
+            <p id="selectionLabel">NO SELECTION</p>
+        </div-->
+
+        <div id="selectionDialog">
+            <label id="selectionInfo">foo</p>
+            <!--label for="selectionSearch"></label-->
+            <input type="search" name="selectionSearch" id="selectionSearch" placeholder="NO SELECTION"></input>
+            <button type="button" id="selectionClear">Clear</button>
+        </div>
+
+        <div id="searchResults">
         </div>
 
         <div id="timeDialog">
@@ -160,6 +175,10 @@
                 console.log("Received updateDataset");
                 propagation.init();
             });
+
+            const selection = new satellites.Selection(dataset);
+            const selectionView = new satellites.SelectionView(selection, 10);
+            selectionView.setElements("selectionSearch", "searchResults", "selectionClear", "selectionInfo");
 
             const helpView = new satellites.HelpView(timeView);
             helpView.setElement("helpDialog");

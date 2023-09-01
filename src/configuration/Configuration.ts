@@ -162,7 +162,7 @@ defaultConfiguration.addRangeFloat('orbitsForward', 'Num. Orbits Forward', 1.0, 
 defaultConfiguration.addRangeFloat('orbitsBackward', 'Num. Orbits Backward', 1.0, 0.0, 10.0, 0.1);
 defaultConfiguration.addString('dummyParameter', 'dummyCaption', 'value');
 
-defaultConfiguration.addOption('coordinates2d', 'Coordinate System', 
+defaultConfiguration.addOption('projection2d', 'Projection', 
     ['Rectangular', 'Azi-Equidistant'], 'Rectangular');
 
 export interface OptionLayout {
@@ -186,7 +186,7 @@ export const defaultLayout : OptionLayout[] = [
     {
         title: "2D View",
         options : [
-            "coordinates2d"
+            "projection2d"
         ]
     },
     {

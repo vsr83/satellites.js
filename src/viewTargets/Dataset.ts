@@ -283,6 +283,55 @@ export class Dataset
     }
 
     /**
+     * Check whether a target is part of the dataset.
+     * 
+     * @param {string} key 
+     * @returns {boolean} Whether target is part of the dataset.
+     */
+    hasTarget(key : string) : boolean
+    {
+        const fleetList : string[] = Object.keys(this.fleetCollection);
+
+        for (let indFleet = 0; indFleet < fleetList.length; indFleet++)
+        {
+            const fleetName : string = fleetList[indFleet];
+            const collection : TargetCollection = this.fleetCollection[fleetName];
+
+            if (collection.containsKey(key))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get all target names.
+     * 
+     * @returns {string[]} List of all target names.
+     */
+    targetNames() : string[] 
+    {
+        const targets : string[] = [];
+
+        const fleetList : string[] = Object.keys(this.fleetCollection);
+
+        for (let indFleet = 0; indFleet < fleetList.length; indFleet++)
+        {
+            const fleetName : string = fleetList[indFleet];
+            const collection : TargetCollection = this.fleetCollection[fleetName];
+
+            const keys : TargetInfoField[] = collection.getKeys();
+
+            for (let indKey = 0; indKey < keys.length; indKey++)  {
+                targets.push(<string> keys[indKey]);
+            }
+        }
+
+        return targets;
+    }
+
+    /**
      * Import dataset from a JSON string.
      * @param json 
      */

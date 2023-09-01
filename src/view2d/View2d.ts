@@ -179,7 +179,7 @@ export class View2d implements IVisibility
         this.canvas2d.width = window.innerWidth;
         this.canvas2d.height = window.innerHeight;
 
-        switch (this.configuration.getString("coordinates2d")) {
+        switch (this.configuration.getString("projection2d")) {
             case "Rectangular":
                 this.projection.projectionType = ProjectionType.EQUIRECTANGULAR;
                 break;

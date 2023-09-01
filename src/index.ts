@@ -28,6 +28,8 @@ import { WebGLUtils } from "./view2d/WebGLUtils";
 import { Projection, ProjectionType } from "./view2d/Projections";
 import { Configuration, defaultConfiguration, defaultLayout } from "./configuration/Configuration";
 import { ConfigurationView } from "./configuration/ConfigurationView";
+import { Selection } from "./Selection";
+import { SelectionView } from "./SelectionView";
 
 export {TargetCollection};
 export {TargetView};
@@ -58,3 +60,4 @@ export {PlanetShader2d};
 export {MapShader2d};
 export {Projection, ProjectionType};
 export {Configuration, ConfigurationView, defaultConfiguration, defaultLayout};
+export {Selection, SelectionView}
