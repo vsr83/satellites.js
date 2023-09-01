@@ -13,6 +13,7 @@ export class Selection {
     constructor(dataset : Dataset) 
     {
         this.dataset = dataset;
+        this.selectionTargets = [];
     }
 
     /**
@@ -43,11 +44,17 @@ export class Selection {
     {
         const newSelection : string[] = [];
 
-        for (let targetName in this.selectionTargets) 
+        for (let indSelection = 0; indSelection < this.selectionTargets.length; indSelection++) 
         {
+            const targetName : string = this.selectionTargets[indSelection];
+
             if (this.dataset.hasTarget(targetName)) 
             {
                 newSelection.push(targetName);
+            }
+            else 
+            {
+                console.log("Removing target from selection \"" + targetName + "\"");
             }
         }
 

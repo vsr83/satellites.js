@@ -14,6 +14,7 @@ import { MapShader2d } from "./MapShader2d";
 import { TargetInfo } from "../viewTargets/Target";
 import { Projection, ProjectionType } from "./Projections";
 import { Configuration } from "../configuration/Configuration";
+import { Selection } from "../Selection";
 
 /**
  * Class implementing the 2d view.
@@ -25,9 +26,6 @@ export class View2d implements IVisibility
 
     // The dataset being visualized.
     private dataset : Dataset;
-
-    // The currently selected target.
-    private selection : string;
 
     // Propagation tools.
     private propagation : Propagation;
@@ -59,6 +57,9 @@ export class View2d implements IVisibility
     // Configuration.
     configuration : Configuration;
 
+    // Selection.
+    selection : Selection;
+
     /**
      * Public constructor.
      * 
@@ -68,11 +69,14 @@ export class View2d implements IVisibility
      *      Time view.
      * @param {Configuration} configuration
      *      Configuration
+     * @param {Selection} selection
+     *      The selection.
      */
     constructor(dataset : Dataset, 
         propagation : Propagation, 
         timeView : TimeView,
-        configuration : Configuration)
+        configuration : Configuration,
+        selection : Selection)
     {
         this.timeCorr = new TimeCorrelation();
         this.timeView = timeView;
@@ -81,7 +85,7 @@ export class View2d implements IVisibility
         this.configuration = configuration;
         this.planetShader = new PlanetShader2d();
         this.mapShader = new MapShader2d();
-        this.selection = "";
+        this.selection = selection;
     }
 
     /**
@@ -153,14 +157,6 @@ export class View2d implements IVisibility
         {
             requestAnimationFrame(this.draw.bind(this));
         }
-
-        if (Object.keys(this.propagation.getPropagationData()).length > 0) {
-            // Placeholder
-            this.selection = Object.keys(this.propagation.getPropagationData())[0];
-        } else {
-            this.selection = "";
-        }
-
 
         const timeStamp : TimeStamp = this.timeCorr.computeTimeStamp(JT, TimeConvention.TIME_UTC, true);
         const nutData : NutationData = Nutation.iau1980(timeStamp);
@@ -236,35 +232,43 @@ export class View2d implements IVisibility
      *      Timestamp.
      */
     drawOrbit(timeStamp : TimeStamp) : void {
-        if (this.selection.length == 0) {
+        //console.log(this.selection.getSelection());
+        this.selection.refresh();
+        const selectionList : string[] = this.selection.getSelection();
+
+        if (selectionList.length == 0) {
             return;
         }
 
-        const period = this.propagation.getOrbitalPeriod(this.selection);
+        for (let indSelection = 0; indSelection < selectionList.length; indSelection++)
+        {
+            const targetName : string = selectionList[indSelection];
+            const period = this.propagation.getOrbitalPeriod(targetName);
 
-        const orbitData : EarthPosition[] = this.propagation.propagateOneRange(this.selection, 
-            timeStamp.JTut1 - period * this.configuration.getNumber("orbitsBackward"),
-            timeStamp.JTut1 + period * this.configuration.getNumber("orbitsForward"), 
-            1.0/1440.0, undefined);
+            const orbitData : EarthPosition[] = this.propagation.propagateOneRange(targetName, 
+                timeStamp.JTut1 - period * this.configuration.getNumber("orbitsBackward"),
+                timeStamp.JTut1 + period * this.configuration.getNumber("orbitsForward"), 
+                0.1/1440.0, undefined);
 
-        let prev : number[] = [0.0, 0.0];
-        for (let indData = 0; indData < orbitData.length - 1; indData++) {
-            const posStart : EarthPosition = orbitData[indData];
-            const posEnd : EarthPosition = orbitData[indData + 1];
+            let prev : number[] = [0.0, 0.0];
+            for (let indData = 0; indData < orbitData.length - 1; indData++) {
+                const posStart : EarthPosition = orbitData[indData];
+                const posEnd : EarthPosition = orbitData[indData + 1];
 
-            const rCanvasStart = this.projection.coordEquirectangularCanvas([posStart.lon, posStart.lat]);
-            const rCanvasEnd = this.projection.coordEquirectangularCanvas([posEnd.lon, posEnd.lat]);
+                const rCanvasStart = this.projection.coordEquirectangularCanvas([posStart.lon, posStart.lat]);
+                const rCanvasEnd = this.projection.coordEquirectangularCanvas([posEnd.lon, posEnd.lat]);
 
-            if (Math.sqrt(Math.pow(rCanvasStart[0] - rCanvasEnd[0], 2) + 
-                        Math.pow(rCanvasStart[1] - rCanvasEnd[1], 2)) < 100.0) {
-                this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
-                this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
-                        
+                if (Math.sqrt(Math.pow(rCanvasStart[0] - rCanvasEnd[0], 2) + 
+                            Math.pow(rCanvasStart[1] - rCanvasEnd[1], 2)) < 100.0) {
+                    this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
+                    this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
+                            
+                }
+                prev = rCanvasEnd;
             }
-            prev = rCanvasEnd;
+            this.context2d.strokeStyle = "#999999";
+            this.context2d.stroke();
         }
-        this.context2d.strokeStyle = "#999999";
-        this.context2d.stroke();
     }
 
     /**

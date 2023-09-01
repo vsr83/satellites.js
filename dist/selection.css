@@ -33,7 +33,7 @@
     background-color: #222;
     position: absolute;
     left: 80px;
-    width: 450px;
+    width: 205px;
     height: 23px;
     top: 0px;
     z-index: 10;
@@ -42,28 +42,9 @@
 #selectionSearch
 {
     position: absolute;
-    width: 150px;
-    left: 200px;
+    width: 200px;
+    left: 5px;
     top: 0px;
-}
-
-#selectionClear
-{
-    position: absolute;
-    width: 70px;
-    height: 23px;
-    left: 350px;
-    top: 0px;
-}
-
-#selectionInfo 
-{
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    font-size: 12px;
-    border: 0px;
-    height: 23px;
 }
 
 #searchResults
@@ -71,7 +52,7 @@
     background-color: #222;
     position: absolute;
     top: 30px;
-    left: 280px;
+    left: 85px;
     width: 300px;
     /*height: 200px;*/
     z-index: 12;

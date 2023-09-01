@@ -27,10 +27,6 @@ export class SelectionView
      *      Element id for the search text area.
      * @param {string} searchResultsId 
      *      Element id for the popout box.
-     * @param {string} selectionClearButtonId
-     *      Element id for the clear button. 
-     * @param {string} selectionLabelId
-     *      Element id for the selection label.
      */
     setElements(searchTextAreaId : string,
         searchResultsId : string, 
@@ -49,8 +45,6 @@ export class SelectionView
 
         this.searchTextArea = <HTMLTextAreaElement> getElement(searchTextAreaId);
         this.searchResults = <HTMLElement> getElement(searchResultsId);
-        this.selectionClearButton = <HTMLButtonElement> getElement(selectionClearButtonId);
-        this.selectionLabel = <HTMLElement> getElement(selectionLabelId);
 
         const ulElement : HTMLElement = document.createElement("ul");
         ulElement.setAttribute("id", "searchResultsList");
@@ -128,6 +122,11 @@ export class SelectionView
             }
         }
 
+        if (indResult == 0)
+        {
+            this.searchResults.style.visibility = "hidden";
+        }
+
         for (; indResult < this.numResults; indResult++)
         {
             this.resultElements[indResult].innerText = "";
@@ -150,10 +149,6 @@ export class SelectionView
     private searchTextArea : HTMLTextAreaElement;
     // HTML element for the search popout box.
     private searchResults : HTMLElement;
-    // HTML element for the selection clear button.
-    private selectionClearButton : HTMLButtonElement;
-    // HTML element for the selection label.
-    private selectionLabel : HTMLElement;
     // The selection used for the view.
     private selection : Selection;
     // Maximum number of search results shown.
