@@ -161,7 +161,7 @@ export class View2d implements IVisibility
         const timeStamp : TimeStamp = this.timeCorr.computeTimeStamp(JT, TimeConvention.TIME_UTC, true);
         const nutData : NutationData = Nutation.iau1980(timeStamp);
 
-        const osvEfi = this.computeSunEfi(timeStamp, nutData);
+        const osvEfiSun = this.computeSunEfi(timeStamp, nutData);
 
         const propData : PropagatedOsvData = this.propagation.propagateAll(JT, undefined);
         //console.log(osvEfi);
@@ -184,13 +184,27 @@ export class View2d implements IVisibility
                 break;
         }
 
-        this.planetShader.draw(osvEfi, this.projection.projectionType);
+        this.planetShader.draw(osvEfiSun, this.projection.projectionType);
         this.mapShader.draw(this.projection.projectionType);
 
         if (this.configuration.getBoolean("showOrbits")) {
             this.drawOrbit(timeStamp);
         }
 
+        if (this.configuration.getBoolean("showSun")) {
+            this.drawSun(osvEfiSun);
+        }
+
+        this.drawTargets(propData);
+    }
+
+    /**
+     * Draw targets.
+     * 
+     * @param {PropagatedOsvData} propData 
+     *      Propagated OSV data for targets.
+     */
+    drawTargets(propData : PropagatedOsvData) : void {
         const targetNames : string[] = Object.keys(propData);
         for (let indTarget = 0; indTarget < targetNames.length; indTarget++)
         {
@@ -200,6 +214,9 @@ export class View2d implements IVisibility
             const osvEfi : OsvFrame = propData[targetName];
             const pos : EarthPosition = Wgs84.coordEfiWgs84(osvEfi.position, 10, 1e-10, false);
 
+            const selectionList : string[] = this.selection.getSelection();
+            const selected = selectionList.includes(targetName);
+
             // Draw target location.
             const rEqu = [pos.lon, pos.lat];
             //const rTarget = this.projection.coordEquirectangularTarget(rEqu);
@@ -207,12 +224,17 @@ export class View2d implements IVisibility
             const rCanvas = this.projection.coordEquirectangularCanvas(rEqu);
 
             this.context2d.beginPath();
-            this.context2d.arc(rCanvas[0], rCanvas[1], 4, 0, Math.PI * 2);
-            this.context2d.fillStyle = "#ffff00";
+            this.context2d.arc(rCanvas[0], rCanvas[1], 2, 0, Math.PI * 2);
+
+            if (selected) {
+                this.context2d.fillStyle = "#ffff00";
+            } else {
+                this.context2d.fillStyle = "#ffffff";
+            }
             this.context2d.fill();
 
-            if (this.configuration.getBoolean("showLabels")) {
-                    this.context2d.fillStyle = "rgba(255, 255, 255)";
+            if (this.configuration.getBoolean("showLabels") || selected) {
+                //this.context2d.fillStyle = "rgba(255, 255, 255)";
 
                 this.context2d.textAlign = "center";
                 this.context2d.textBaseline = "bottom";
@@ -262,13 +284,28 @@ export class View2d implements IVisibility
                             Math.pow(rCanvasStart[1] - rCanvasEnd[1], 2)) < 100.0) {
                     this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
                     this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
-                            
                 }
                 prev = rCanvasEnd;
             }
             this.context2d.strokeStyle = "#999999";
             this.context2d.stroke();
         }
+    }
+
+    /**
+     * Draw position of the Sun.
+     * 
+     * @param {OsvFrame} osvEfiSun 
+     *      Position of the Sun in the EFI frame.
+     */
+    drawSun(osvEfiSun : OsvFrame) : void {
+        const earthPos : EarthPosition = Wgs84.coordEfiWgs84(osvEfiSun.position, 5, 1e-10, false);
+        const rCanvas = this.projection.coordEquirectangularCanvas([earthPos.lon, earthPos.lat]);
+        // Draw Sun location.
+        this.context2d.beginPath();
+        this.context2d.arc(rCanvas[0], rCanvas[1], 10, 0, Math.PI * 2);
+        this.context2d.fillStyle = "#ffff00";
+        this.context2d.fill();        
     }
 
     /**
