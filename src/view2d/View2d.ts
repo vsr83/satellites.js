@@ -263,6 +263,7 @@ export class View2d implements IVisibility
      * Draw the equator line.
      */
     drawEquator() : void {
+        this.context2d.beginPath();
         this.context2d.strokeStyle = "#cccccc";
 
         if (this.configuration.getString("projection2d") == "Rectangular") {
@@ -288,6 +289,7 @@ export class View2d implements IVisibility
      */
     drawLinesLatitude() : void {
         const latStep : number = this.configuration.getNumber("gridLatitudeStep");
+        this.context2d.beginPath();
         this.context2d.strokeStyle = "#999999";
 
         if (this.configuration.getString("projection2d") == "Rectangular") {
@@ -327,6 +329,7 @@ export class View2d implements IVisibility
      */
     drawLinesLongitude() : void {
         const lonStep : number = this.configuration.getNumber("gridLongitudeStep");
+        this.context2d.beginPath();
 
         for (let lonDeg = 0; lonDeg <= 180.0; lonDeg += lonStep) {
             const rCanvasStart = this.projection.coordEquirectangularCanvas([lonDeg, -90]);
