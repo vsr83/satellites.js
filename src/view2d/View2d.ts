@@ -191,6 +191,18 @@ export class View2d implements IVisibility
             this.drawOrbit(timeStamp);
         }
 
+        if (this.configuration.getBoolean("showLinesLatitude")) {
+            this.drawLinesLatitude();
+        }
+
+        if (this.configuration.getBoolean("showLinesLongitude")) {
+            this.drawLinesLongitude();            
+        }
+
+        if (this.configuration.getBoolean("showEquator")) {
+            this.drawEquator();
+        }
+
         const targetNames : string[] = Object.keys(propData);
         for (let indTarget = 0; indTarget < targetNames.length; indTarget++)
         {
@@ -223,6 +235,91 @@ export class View2d implements IVisibility
                 this.context2d.fillText(caption, rCanvas[0], rCanvas[1]); 
             }
         }
+    }
+
+    /**
+     * Draw the equator line.
+     */
+    drawEquator() : void {
+        this.context2d.strokeStyle = "#cccccc";
+
+        if (this.configuration.getString("projection2d") == "Rectangular") {
+                const rCanvasStart = this.projection.coordEquirectangularCanvas([-180, 0]);
+                const rCanvasEnd = this.projection.coordEquirectangularCanvas([180, 0]);
+                this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
+                this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
+        } else {
+            const lonStep : number = 1.0;
+            for (let lonDeg = -180; lonDeg <= 180.0; lonDeg += 1.0) {
+                const rCanvasStart = this.projection.coordEquirectangularCanvas([lonDeg, 0]);
+                const rCanvasEnd = this.projection.coordEquirectangularCanvas([lonDeg + lonStep, 0]);
+                this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
+                this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
+            }
+        }
+
+        this.context2d.stroke();
+    }
+
+    /**
+     * Draw latitude lines.
+     */
+    drawLinesLatitude() : void {
+        const latStep : number = this.configuration.getNumber("gridLatitudeStep");
+        this.context2d.strokeStyle = "#999999";
+
+        if (this.configuration.getString("projection2d") == "Rectangular") {
+            for (let latDeg = 0; latDeg <= 90.0; latDeg += latStep) {
+                const rCanvasStart = this.projection.coordEquirectangularCanvas([-180, latDeg]);
+                const rCanvasEnd = this.projection.coordEquirectangularCanvas([180, latDeg]);
+                this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
+                this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
+
+                const rCanvasStart2 = this.projection.coordEquirectangularCanvas([-180, -latDeg]);
+                const rCanvasEnd2 = this.projection.coordEquirectangularCanvas([180, -latDeg]);
+                this.context2d.moveTo(rCanvasStart2[0], rCanvasStart2[1]);
+                this.context2d.lineTo(rCanvasEnd2[0], rCanvasEnd2[1]);
+            }
+        } else {
+            const lonStep : number = 1.0;
+            for (let latDeg = 0; latDeg <= 90.0; latDeg += latStep) {
+                for (let lonDeg = -180; lonDeg <= 180.0; lonDeg += 1.0) {
+                    const rCanvasStart = this.projection.coordEquirectangularCanvas([lonDeg, latDeg]);
+                    const rCanvasEnd = this.projection.coordEquirectangularCanvas([lonDeg + lonStep, latDeg]);
+                    this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
+                    this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
+
+                    const rCanvasStart2 = this.projection.coordEquirectangularCanvas([lonDeg, -latDeg]);
+                    const rCanvasEnd2 = this.projection.coordEquirectangularCanvas([lonDeg + lonStep, -latDeg]);
+                    this.context2d.moveTo(rCanvasStart2[0], rCanvasStart2[1]);
+                    this.context2d.lineTo(rCanvasEnd2[0], rCanvasEnd2[1]);
+                }
+            }
+        }
+
+        this.context2d.stroke();
+    }
+
+    /**
+     * Draw longitude lines.
+     */
+    drawLinesLongitude() : void {
+        const lonStep : number = this.configuration.getNumber("gridLongitudeStep");
+
+        for (let lonDeg = 0; lonDeg <= 180.0; lonDeg += lonStep) {
+            const rCanvasStart = this.projection.coordEquirectangularCanvas([lonDeg, -90]);
+            const rCanvasEnd = this.projection.coordEquirectangularCanvas([lonDeg, 90]);
+            this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
+            this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
+
+            const rCanvasStart2 = this.projection.coordEquirectangularCanvas([-lonDeg, -90]);
+            const rCanvasEnd2 = this.projection.coordEquirectangularCanvas([-lonDeg, 90]);
+            this.context2d.moveTo(rCanvasStart2[0], rCanvasStart2[1]);
+            this.context2d.lineTo(rCanvasEnd2[0], rCanvasEnd2[1]);
+        }
+
+        this.context2d.strokeStyle = "#999999";
+        this.context2d.stroke();
     }
 
     /**
