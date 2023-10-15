@@ -157,11 +157,12 @@ export class ConfigurationView {
         label.setAttribute("class", "configuration_label");
         label.setAttribute("for", key);
         optionDiv.appendChild(label);
-        const textNode = document.createTextNode(option.caption);
+        const textNode = document.createTextNode(option.caption + ": ");
         label.appendChild(textNode);
 
         const select : HTMLSelectElement = document.createElement("select");
         select.setAttribute("id", "configuration_option_" + key);
+        select.setAttribute("class", "configuration_option");
         select.setAttribute("name", key);
         optionDiv.appendChild(select);
 

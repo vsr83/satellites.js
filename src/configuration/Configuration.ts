@@ -158,6 +158,7 @@ defaultConfiguration.addBoolean('showStars', 'Stars', false);
 defaultConfiguration.addBoolean('showLinesLatitude', 'Latitude Lines', false);
 defaultConfiguration.addBoolean('showLinesLongitude', 'Longitude Lines', false);
 defaultConfiguration.addBoolean('showEquator', 'Show Equator', true);
+defaultConfiguration.addBoolean('showPrimeMeridian', 'Show Prime Meridian', true);
 
 defaultConfiguration.addRangeFloat('orbitsForward', 'Num. Orbits Forward', 1.0, 0.0, 10.0, 0.1);
 defaultConfiguration.addRangeFloat('orbitsBackward', 'Num. Orbits Backward', 1.0, 0.0, 10.0, 0.1);
@@ -168,6 +169,10 @@ defaultConfiguration.addRangeFloat('gridLatitudeStep', 'Grid Latitude Step', 15.
 
 defaultConfiguration.addOption('projection2d', 'Projection', 
     ['Rectangular', 'Azi-Equidistant'], 'Rectangular');
+
+defaultConfiguration.addOption('showAllOrbits', 'Show Orbits', 
+    ['Selected', 'All'], 'Selected');
+
 
 export interface OptionLayout {
     title : string;
@@ -196,6 +201,7 @@ export const defaultLayout : OptionLayout[] = [
     {
         title: "Orbits",
         options : [
+            "showAllOrbits",
             "orbitsBackward",
             "orbitsForward"
         ]
@@ -204,6 +210,7 @@ export const defaultLayout : OptionLayout[] = [
         title: "Grid",
         options : [
             "showEquator",
+            "showPrimeMeridian",
             "showLinesLatitude",
             "showLinesLongitude",
             "gridLongitudeStep",

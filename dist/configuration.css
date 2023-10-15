@@ -103,3 +103,8 @@
 .configuration_label {
     font-size: 12px;
 }
+
+.configuration_option {
+    position: absolute;
+    right: 0px;
+}

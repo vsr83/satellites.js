@@ -203,6 +203,10 @@ export class View2d implements IVisibility
             this.drawEquator();
         }
 
+        if (this.configuration.getBoolean("showPrimeMeridian")) {
+            this.drawPrimeMeridian();
+        }
+
         if (this.configuration.getBoolean("showSun")) {
             this.drawSun(osvEfiSun);
         }
@@ -260,7 +264,7 @@ export class View2d implements IVisibility
     }
 
     /**
-     * Draw the equator line.
+     * Draw the Equator line.
      */
     drawEquator() : void {
         this.context2d.beginPath();
@@ -280,6 +284,21 @@ export class View2d implements IVisibility
                 this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
             }
         }
+
+        this.context2d.stroke();
+    }
+
+    /**
+     * Draw the Prime Meridian.
+     */
+    drawPrimeMeridian() : void {
+        this.context2d.beginPath();
+        this.context2d.strokeStyle = "#cccccc";
+
+        const rCanvasStart = this.projection.coordEquirectangularCanvas([0, 90]);
+        const rCanvasEnd = this.projection.coordEquirectangularCanvas([0, -90]);
+        this.context2d.moveTo(rCanvasStart[0], rCanvasStart[1]);
+        this.context2d.lineTo(rCanvasEnd[0], rCanvasEnd[1]);
 
         this.context2d.stroke();
     }
@@ -330,6 +349,7 @@ export class View2d implements IVisibility
     drawLinesLongitude() : void {
         const lonStep : number = this.configuration.getNumber("gridLongitudeStep");
         this.context2d.beginPath();
+        this.context2d.strokeStyle = "#999999";
 
         for (let lonDeg = 0; lonDeg <= 180.0; lonDeg += lonStep) {
             const rCanvasStart = this.projection.coordEquirectangularCanvas([lonDeg, -90]);
@@ -343,7 +363,6 @@ export class View2d implements IVisibility
             this.context2d.lineTo(rCanvasEnd2[0], rCanvasEnd2[1]);
         }
 
-        this.context2d.strokeStyle = "#999999";
         this.context2d.stroke();
     }
 
@@ -356,15 +375,21 @@ export class View2d implements IVisibility
     drawOrbit(timeStamp : TimeStamp) : void {
         //console.log(this.selection.getSelection());
         this.selection.refresh();
-        const selectionList : string[] = this.selection.getSelection();
 
-        if (selectionList.length == 0) {
+        let targetList : string[] = [];
+
+        if (this.configuration.getString("showAllOrbits") == "All") {
+            targetList = this.dataset.targetNames();            
+        } else {
+            targetList = this.selection.getSelection();
+        }
+        if (targetList.length == 0) {
             return;
         }
 
-        for (let indSelection = 0; indSelection < selectionList.length; indSelection++)
+        for (let indSelection = 0; indSelection < targetList.length; indSelection++)
         {
-            const targetName : string = selectionList[indSelection];
+            const targetName : string = targetList[indSelection];
             const period = this.propagation.getOrbitalPeriod(targetName);
 
             const orbitData : EarthPosition[] = this.propagation.propagateOneRange(targetName, 
