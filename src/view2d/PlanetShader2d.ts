@@ -108,6 +108,7 @@ export class PlanetShader2d
     uniform bool u_draw_texture;
     uniform bool u_grayscale;
     uniform float u_texture_brightness;
+    uniform bool u_draw_visibility;
 
     // ECEF coordinates for the Moon and the Sun. The Sun vector has been scaled
     // to have length of 1 to avoid issues with the arithmetic.
@@ -117,6 +118,10 @@ export class PlanetShader2d
     uniform float u_sun_x;
     uniform float u_sun_y;
     uniform float u_sun_z;
+    uniform float u_sat_x;
+    uniform float u_sat_y;
+    uniform float u_sat_z;
+
 
     // Angular diameter of the Sun. It seems tha the shader arithmetic is not
     // accurate enough to compute this.
@@ -243,6 +248,17 @@ export class PlanetShader2d
             {
                 // Night.
                 outColor = texture(u_imageNight, v_texcoord);
+            }
+        }
+
+        if (u_draw_visibility)
+        {
+            vec3 coordECEFSat = vec3(u_sat_x, u_sat_y, u_sat_z);
+            vec3 coordSatENU = coordEfiEnu(coordECEFSat, latitude, longitude, 0.0, true);
+            float altitudeSat = rad2deg(asin(coordSatENU.z / length(coordSatENU)));
+            if (coordSatENU.z > 0.0) 
+            {
+                outColor = outColor + vec4(0.2, 0.0, 0.0, 0.0);
             }
         }
 
@@ -448,7 +464,7 @@ export class PlanetShader2d
         this.numTextures++;
     }
 
-    draw(osvEfiSun : OsvFrame, projectionType : ProjectionType)
+    draw(osvEfiSun : OsvFrame, osvEfiSat : OsvFrame | null, projectionType : ProjectionType)
     {
         if (this.numTextures < 2)
         {
@@ -463,9 +479,13 @@ export class PlanetShader2d
         const sunXLocation = gl.getUniformLocation(this.programPlanet, "u_sun_x");
         const sunYLocation = gl.getUniformLocation(this.programPlanet, "u_sun_y");
         const sunZLocation = gl.getUniformLocation(this.programPlanet, "u_sun_z");
+        const satXLocation = gl.getUniformLocation(this.programPlanet, "u_sat_x");
+        const satYLocation = gl.getUniformLocation(this.programPlanet, "u_sat_y");
+        const satZLocation = gl.getUniformLocation(this.programPlanet, "u_sat_z");
         const grayscaleLocation = gl.getUniformLocation(this.programPlanet, "u_grayscale");
         const brightnessLocation = gl.getUniformLocation(this.programPlanet, "u_texture_brightness");
         const drawTextureLocation = gl.getUniformLocation(this.programPlanet, "u_draw_texture");
+        const drawVisibility = gl.getUniformLocation(this.programPlanet, "u_draw_visibility");
 
         const rECEFSun = osvEfiSun.position;//[-140456614121.2753,-3050172162.1580505,58265567310.35503];
         gl.uniform1f(drawTextureLocation, 1);
@@ -473,8 +493,18 @@ export class PlanetShader2d
         gl.uniform1f(sunXLocation, rECEFSun[0] / MathUtils.norm(rECEFSun));
         gl.uniform1f(sunYLocation, rECEFSun[1] / MathUtils.norm(rECEFSun));
         gl.uniform1f(sunZLocation, rECEFSun[2] / MathUtils.norm(rECEFSun));
-        gl.uniform1f(brightnessLocation, 0.6);
 
+        if (osvEfiSat != null) {
+            const rECEFSat = osvEfiSat.position;
+            gl.uniform1f(drawVisibility, 1);
+            gl.uniform1f(satXLocation, rECEFSat[0]);
+            gl.uniform1f(satYLocation, rECEFSat[1]);
+            gl.uniform1f(satZLocation, rECEFSat[2]);
+        } else {
+            gl.uniform1f(drawVisibility, 0);
+        }
+
+        gl.uniform1f(brightnessLocation, 0.6);
         var resolutionLocation = gl.getUniformLocation(this.programPlanet, "u_resolution");
         gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
 

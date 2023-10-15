@@ -184,7 +184,13 @@ export class View2d implements IVisibility
                 break;
         }
 
-        this.planetShader.draw(osvEfiSun, this.projection.projectionType);
+        let osvEfiSat : OsvFrame | null = null;
+        
+        if (this.selection.getSelection().length > 0 && this.configuration.getBoolean("showVisibility")) {
+            osvEfiSat = propData[this.selection.getSelection()[0]];
+        }
+        
+        this.planetShader.draw(osvEfiSun, osvEfiSat, this.projection.projectionType);
         this.mapShader.draw(this.projection.projectionType);
 
         if (this.configuration.getBoolean("showOrbits")) {

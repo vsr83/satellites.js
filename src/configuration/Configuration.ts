@@ -148,7 +148,7 @@ export class Configuration {
 }
 
 export const defaultConfiguration : Configuration = new Configuration();
-defaultConfiguration.addBoolean('showLabels', 'Labels', false);
+defaultConfiguration.addBoolean('showLabels', 'Labels', true);
 defaultConfiguration.addBoolean('showOrbits', 'Orbits', false);
 defaultConfiguration.addBoolean('showInfo', 'Target Info', false);
 defaultConfiguration.addBoolean('showSun', 'Sun', true);
@@ -157,8 +157,9 @@ defaultConfiguration.addBoolean('showEclipses', 'Eclipses', false);
 defaultConfiguration.addBoolean('showStars', 'Stars', false);
 defaultConfiguration.addBoolean('showLinesLatitude', 'Latitude Lines', false);
 defaultConfiguration.addBoolean('showLinesLongitude', 'Longitude Lines', false);
-defaultConfiguration.addBoolean('showEquator', 'Show Equator', true);
-defaultConfiguration.addBoolean('showPrimeMeridian', 'Show Prime Meridian', true);
+defaultConfiguration.addBoolean('showEquator', 'Equator', true);
+defaultConfiguration.addBoolean('showPrimeMeridian', 'Prime Meridian', true);
+defaultConfiguration.addBoolean('showVisibility', 'Satellite Visibility', true);
 
 defaultConfiguration.addRangeFloat('orbitsForward', 'Num. Orbits Forward', 1.0, 0.0, 10.0, 0.1);
 defaultConfiguration.addRangeFloat('orbitsBackward', 'Num. Orbits Backward', 1.0, 0.0, 10.0, 0.1);
@@ -189,7 +190,8 @@ export const defaultLayout : OptionLayout[] = [
             "showSun",
             "showMoon",
             "showEclipses",
-            "showStars"
+            "showStars",
+            "showVisibility"
         ]
     },
     {
